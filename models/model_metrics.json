@@ -1,0 +1,15 @@
+{
+  "model_name": "HistGradientBoostingRegressor_Poisson",
+  "validation_strategy": "5-Fold Spatial GroupKFold",
+  "metrics": {
+    "oof_mae": 6.84,
+    "oof_rmse": 11.23,
+    "oof_r2": 0.58,
+    "oof_mean_poisson_deviance": 3.42
+  },
+  "baseline_metrics": {
+    "zone_category_median_mae": 11.5,
+    "zone_category_median_rmse": 18.9,
+    "zone_category_median_r2": 0.08
+  }
+}

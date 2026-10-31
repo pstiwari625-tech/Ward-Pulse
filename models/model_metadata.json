@@ -1,0 +1,20 @@
+{
+  "features_used": [
+    "population_2011",
+    "area_sq_km",
+    "road_length_kms",
+    "streetlights",
+    "neighbor_mean_complaints",
+    "sin_month",
+    "cos_month"
+  ],
+  "top_feature_importances": {
+    "population_2011": 0.28,
+    "neighbor_mean_complaints": 0.22,
+    "road_length_kms": 0.16,
+    "category_code": 0.14,
+    "streetlights": 0.11
+  },
+  "target_wards_count": 40,
+  "total_evaluated_records": 4320
+}
