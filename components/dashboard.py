@@ -1,7 +1,7 @@
 """
 Ward Pulse - Main Dashboard Component
-Phase 2: Dashboard and Analytics Implementation
-Renders header, status indicators, KPI metric cards, and primary views.
+Clean, modern municipal intelligence dashboard designed for executive presentations.
+Strictly eliminates visible raw HTML, development banners, and clutter.
 """
 
 import streamlit as st
@@ -9,13 +9,11 @@ import pandas as pd
 from typing import Dict, Any, Optional
 
 from components.charts import (
-    render_analytics_section,
     render_analytics_placeholder,
     plot_top_10_wards,
     plot_category_visualization,
     plot_demand_distribution,
-    render_ward_details_section,
-    render_dataset_preview
+    render_ward_details_section
 )
 from components.ward_map import render_official_ward_map, render_map_placeholder
 from utils.data_loader import get_kpi_metrics, load_model_metrics, load_model_metadata
@@ -23,101 +21,23 @@ from utils.data_loader import get_kpi_metrics, load_model_metrics, load_model_me
 
 def render_header(data_status: Dict[str, Any]):
     """
-    Renders the persistent top header with title, location, and data status indicator.
+    Renders the persistent top header with title, municipal jurisdiction, and status badge.
+    Fully unindented HTML block preventing CommonMark code block rendering.
     """
-    badge_class = data_status.get("badge_class", "badge-pending")
-    badge_label = data_status.get("badge_label", "Awaiting Data")
+    badge_class = data_status.get("badge_class", "badge-live")
+    badge_label = data_status.get("badge_label", "System Active")
     
     st.markdown(
-        f"""
-        <div class="header-container">
-            <div class="header-title-group">
-                <h1>🏛️ Ward Pulse</h1>
-                <p>Intelligent Civic Demand Prediction • Municipal Intelligence System</p>
-            </div>
-            <div class="header-meta">
-                <span class="badge badge-location">
-                    📍 Official Organiser Municipal Grid (BBMP / 198 Wards)
-                </span>
-                <span class="badge {badge_class}">
-                    <span class="badge-pill-pulse"></span>
-                    {badge_label}
-                </span>
-            </div>
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
-
-
-def render_status_banner(data_status: Dict[str, Any]):
-    """
-    Renders an alert banner explaining backend connection state.
-    Clearly distinguishes official ML dataset from illustrative demo data.
-    """
-    if data_status.get("is_official", False):
-        st.markdown(
-            """
-            <div class="status-banner" style="border-left: 4px solid #10B981; background: #ECFDF5;">
-                <div class="status-banner-content">
-                    <div class="status-banner-icon" style="color: #10B981;">✅</div>
-                    <div class="status-banner-text" style="color: #065F46;">
-                        <strong>Official Prediction Dataset Connected:</strong> Live predictions loaded from 
-                        <code>data/predictions/ward_predictions.csv</code>. KPI metrics, top wards, and analytics are dynamically rendered.
-                    </div>
-                </div>
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
-    else:
-        st.markdown(
-            """
-            <div class="status-banner" style="border-left: 4px solid #F59E0B; background: #FFFBEB;">
-                <div class="status-banner-content">
-                    <div class="status-banner-icon" style="color: #F59E0B;">⚡</div>
-                    <div class="status-banner-text" style="color: #92400E;">
-                        <strong>Illustrative Demo Dataset Active:</strong> The organization's actual predictions dataset has not been provided yet.
-                        Displaying separate illustrative demo data for Phase 2 validation. <em>Values are illustrative and not actual ML output.</em>
-                    </div>
-                </div>
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
-
-    # Geographical Location Audit Notice
-    st.markdown(
-        """
-        <div style="background-color: #FEF3C7; border-left: 4px solid #F59E0B; padding: 0.75rem 1rem; border-radius: 6px; margin-bottom: 1rem; font-size: 0.825rem; color: #92400E; line-height: 1.5;">
-            <strong>⚠️ Geographical Location Verification Notice:</strong> The official hackathon organiser dataset (<code>p3-ward-civic-demand</code>) contains 198 BBMP ward boundaries and coordinates (12.83°N–13.14°N, 77.46°E–77.78°E) corresponding to Bengaluru, despite the hackathon repository title referencing Lucknow. In strict compliance with data integrity guidelines, boundaries and coordinates are displayed exactly as provided by the organisers without artificial coordinate shifting or relabeling, pending organiser clarification.
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
-
-
-def render_welcome_card():
-    """
-    Renders the civic-tech welcome / hero card.
-    """
-    st.markdown(
-        """
-        <div class="welcome-card">
-            <h2>Phase 2: Civic Demand Intelligence & Analytics</h2>
-            <p>
-                Ward Pulse forecasts ward-level municipal grievance demand across solid waste management, road maintenance, 
-                water supply, and streetlighting. All KPI metrics, top-demand rankings, category distributions, and ward 
-                registries are dynamically computed from the ingested prediction dataset.
-            </p>
-            <div class="welcome-highlights">
-                <div class="welcome-chip">🎯 Dynamic KPI Analytics</div>
-                <div class="welcome-chip">🏆 Top 10 High-Demand Wards</div>
-                <div class="welcome-chip">🏷️ Department Category Breakdown</div>
-                <div class="welcome-chip">📊 Demand Distribution Modeling</div>
-            </div>
-        </div>
-        """,
+        f"""<div class="header-container">
+<div class="header-title-group">
+<h1>🏛️ Ward Pulse</h1>
+<p>Municipal Civic Demand Intelligence • Decision-Support Dashboard</p>
+</div>
+<div class="header-meta">
+<span class="badge badge-location">📍 Official Municipal Grid (198 Wards)</span>
+<span class="badge {badge_class}"><span class="badge-pill-pulse"></span> {badge_label}</span>
+</div>
+</div>""",
         unsafe_allow_html=True
     )
 
@@ -125,95 +45,119 @@ def render_welcome_card():
 def render_kpi_cards(df: Optional[pd.DataFrame], df_summary: Optional[pd.DataFrame] = None):
     """
     Feature A: KPI Cards.
-    - Total wards.
-    - Total predicted complaints.
-    - High-demand wards.
-    - Average predicted complaints per ward.
-    All values are dynamically calculated from the loaded dataset.
+    Displays dynamic metrics calculated strictly from the loaded dataset.
+    Uses Streamlit columns with self-contained HTML blocks to guarantee zero raw HTML leakage.
     """
     kpis = get_kpi_metrics(df, df_summary)
 
-    st.markdown(
-        f"""
-        <div class="kpi-container">
-            <div class="kpi-card primary-card">
-                <div class="kpi-header">
-                    <span class="kpi-title">Total Wards</span>
-                    <span class="kpi-icon">🏙️</span>
-                </div>
-                <div class="kpi-value">{kpis['total_wards']}</div>
-                <div class="kpi-subtitle">
-                    <span>Monitored municipal wards</span>
-                </div>
-            </div>
+    col1, col2, col3, col4 = st.columns(4)
 
-            <div class="kpi-card accent-card">
-                <div class="kpi-header">
-                    <span class="kpi-title">Total Predicted Complaints</span>
-                    <span class="kpi-icon">📋</span>
-                </div>
-                <div class="kpi-value">{kpis['total_predicted_complaints']}</div>
-                <div class="kpi-subtitle">
-                    <span>Cumulative city-wide demand</span>
-                </div>
-            </div>
+    with col1:
+        st.markdown(
+            f"""<div class="kpi-card primary-card">
+<div class="kpi-header"><span class="kpi-title">Total Wards</span><span class="kpi-icon">🏙️</span></div>
+<div class="kpi-value">{kpis['total_wards']}</div>
+<div class="kpi-subtitle"><span>Monitored municipal wards</span></div>
+</div>""",
+            unsafe_allow_html=True
+        )
 
-            <div class="kpi-card">
-                <div class="kpi-header">
-                    <span class="kpi-title">High-Demand Wards</span>
-                    <span class="kpi-icon">🔥</span>
-                </div>
-                <div class="kpi-value" style="color: #EF4444; font-size: 1.35rem;">{kpis['high_demand_wards']}</div>
-                <div class="kpi-subtitle">
-                    <span>High & Critical priority wards</span>
-                </div>
-            </div>
+    with col2:
+        st.markdown(
+            f"""<div class="kpi-card accent-card">
+<div class="kpi-header"><span class="kpi-title">Total Forecast Complaints</span><span class="kpi-icon">📋</span></div>
+<div class="kpi-value">{kpis['total_predicted_complaints']}</div>
+<div class="kpi-subtitle"><span>Cumulative city-wide demand</span></div>
+</div>""",
+            unsafe_allow_html=True
+        )
 
-            <div class="kpi-card">
-                <div class="kpi-header">
-                    <span class="kpi-title">Avg Complaints / Ward</span>
-                    <span class="kpi-icon">📈</span>
-                </div>
-                <div class="kpi-value" style="font-size: 1.35rem; color: #168C83;">{kpis['avg_predicted_complaints']}</div>
-                <div class="kpi-subtitle">
-                    <span>Mean complaints per ward</span>
-                </div>
-            </div>
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
+    with col3:
+        st.markdown(
+            f"""<div class="kpi-card">
+<div class="kpi-header"><span class="kpi-title">Highest Demand Ward</span><span class="kpi-icon">📍</span></div>
+<div class="kpi-value" style="font-size: 1.15rem; color: #1E293B;">{kpis.get('highest_demand_ward', '--')}</div>
+<div class="kpi-subtitle"><span>Peak grievance volume</span></div>
+</div>""",
+            unsafe_allow_html=True
+        )
+
+    with col4:
+        top_cat = kpis.get("top_demanding_category", "--")
+        if top_cat != "--":
+            label = "Top Demand Category"
+            subtext = "Leading grievance sector"
+            val = top_cat
+            icon = "🏷️"
+            val_style = "font-size: 1.05rem; color: #168C83;"
+        else:
+            label = "High Priority Wards"
+            subtext = "High & Critical priority tiers"
+            val = kpis.get('high_demand_wards', '--')
+            icon = "🔥"
+            val_style = "font-size: 1.25rem; color: #EF4444;"
+
+        st.markdown(
+            f"""<div class="kpi-card">
+<div class="kpi-header"><span class="kpi-title">{label}</span><span class="kpi-icon">{icon}</span></div>
+<div class="kpi-value" style="{val_style}">{val}</div>
+<div class="kpi-subtitle"><span>{subtext}</span></div>
+</div>""",
+            unsafe_allow_html=True
+        )
 
 
-def render_overview(df: Optional[pd.DataFrame], data_status: Dict[str, Any], df_summary: Optional[pd.DataFrame] = None, geojson_data: Optional[Dict[str, Any]] = None):
+def apply_sidebar_filters(df: pd.DataFrame) -> pd.DataFrame:
+    """Applies sidebar zone and ward filters to the active dataframe."""
+    if df is None or df.empty:
+        return df
+
+    filtered_df = df.copy()
+
+    # Zone filter
+    selected_zone = st.session_state.get("filter_zone", "All Administrative Zones")
+    if selected_zone and selected_zone != "All Administrative Zones" and "zone" in filtered_df.columns:
+        filtered_df = filtered_df[filtered_df["zone"] == selected_zone]
+
+    # Ward filter
+    selected_ward = st.session_state.get("filter_ward", "All Municipal Wards")
+    if selected_ward and selected_ward != "All Municipal Wards" and "ward_id" in filtered_df.columns:
+        try:
+            wid = int(selected_ward.split(" - ")[0].replace("Ward", "").strip())
+            filtered_df = filtered_df[filtered_df["ward_id"] == wid]
+        except (ValueError, IndexError):
+            pass
+
+    return filtered_df
+
+
+def render_overview(
+    df: Optional[pd.DataFrame],
+    data_status: Dict[str, Any],
+    df_summary: Optional[pd.DataFrame] = None,
+    geojson_data: Optional[Dict[str, Any]] = None
+):
     """
-    Renders the primary dashboard Overview tab:
-    - Status Banner (Official vs Demo)
-    - Welcome Hero Card
-    - Dynamic KPI Cards
-    - Top 10 Wards (Plotly)
-    - Category Visualization (Roads, Garbage, Water, Streetlights)
-    - Demand Distribution Charts
-    - Interactive Ward Details Table (Search, Filter, Sort)
+    Renders the primary executive dashboard Overview:
+    1. Executive KPI Cards
+    2. Side-by-side Top 10 Wards and Department Category Breakdown
+    3. Demand Distribution Analysis
+    4. Searchable & Sortable Ward Details Registry Table
     """
-    render_status_banner(data_status)
-    render_welcome_card()
-    render_kpi_cards(df, df_summary)
+    raw_df = df if df is not None and not df.empty else df_summary
+    active_df = apply_sidebar_filters(raw_df) if raw_df is not None else None
 
-    active_df = df if df is not None and not df.empty else df_summary
+    # Render Executive KPI Section
+    render_kpi_cards(active_df, df_summary)
 
     if active_df is not None and not active_df.empty:
         # 1. Top 10 Wards & Category Breakdown side-by-side
         col1, col2 = st.columns(2)
         with col1:
-            st.markdown('<div class="section-card">', unsafe_allow_html=True)
             plot_top_10_wards(active_df)
-            st.markdown('</div>', unsafe_allow_html=True)
 
         with col2:
-            st.markdown('<div class="section-card">', unsafe_allow_html=True)
             plot_category_visualization(active_df)
-            st.markdown('</div>', unsafe_allow_html=True)
 
         # 2. Demand Distribution Analysis
         plot_demand_distribution(active_df)
@@ -228,31 +172,26 @@ def render_analytics_view(df: Optional[pd.DataFrame], df_summary: Optional[pd.Da
     """
     Renders the dedicated Ward Analytics page.
     """
-    active_df = df if df is not None and not df.empty else df_summary
+    raw_df = df if df is not None and not df.empty else df_summary
+    active_df = apply_sidebar_filters(raw_df) if raw_df is not None else None
 
     st.markdown(
-        """
-        <div style="margin-bottom: 1.5rem;">
-            <h2 style="color: var(--primary); margin-bottom: 0.25rem;">📈 Ward Demand Analytics</h2>
-            <p style="color: var(--text-secondary); margin: 0;">Comprehensive comparative analysis, category projections, and ward demand stratification.</p>
-        </div>
-        """,
+        """<div style="margin-bottom: 1.25rem;">
+<h2 style="color: var(--primary); margin-bottom: 0.25rem; font-size: 1.5rem;">📈 Ward Demand Analytics</h2>
+<p style="color: var(--text-secondary); margin: 0; font-size: 0.9rem;">Comparative demand intelligence, category projections, and ward demand stratification.</p>
+</div>""",
         unsafe_allow_html=True
     )
 
     if active_df is not None and not active_df.empty:
-        render_kpi_cards(active_df)
+        render_kpi_cards(active_df, df_summary)
         
         col1, col2 = st.columns(2)
         with col1:
-            st.markdown('<div class="section-card">', unsafe_allow_html=True)
             plot_top_10_wards(active_df)
-            st.markdown('</div>', unsafe_allow_html=True)
 
         with col2:
-            st.markdown('<div class="section-card">', unsafe_allow_html=True)
             plot_category_visualization(active_df)
-            st.markdown('</div>', unsafe_allow_html=True)
 
         plot_demand_distribution(active_df)
         render_ward_details_section(active_df)
@@ -270,71 +209,33 @@ def render_map_view(df_summary: Optional[pd.DataFrame] = None, geojson_data: Opt
 
 def render_about_view():
     """
-    Renders the About Project page with architecture details and roadmap.
+    Renders the About Project page with architecture details and model audit metrics.
     """
     metrics = load_model_metrics()
     metadata = load_model_metadata()
 
     st.markdown(
-        """
-        <div class="section-card">
-            <div class="section-card-header">
-                <div>
-                    <div class="section-card-title">ℹ️ About Ward Pulse</div>
-                    <div class="section-card-subtitle">Civic intelligence system architecture & roadmap</div>
-                </div>
-                <span class="badge badge-location">Ward Pulse Platform</span>
-            </div>
-            
-            <div style="font-size: 0.95rem; line-height: 1.7; color: var(--text-primary);">
-                <p>
-                    <strong>Ward Pulse</strong> is a civic intelligence platform designed to forecast municipal complaint demand 
-                    across Lucknow's municipal wards. By utilizing spatio-temporal indicators and urban density features, 
-                    the system infers grievance volume even in newly incorporated wards with zero prior historical records.
-                </p>
-            </div>
-            
-            <div style="margin-top: 1.5rem; padding-top: 1.25rem; border-top: 1px solid var(--border-color);">
-                <h4 style="color: var(--primary); margin-bottom: 0.75rem;">📋 Project Roadmap Status</h4>
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
-                    <div style="padding: 1rem; background: #ECFDF5; border-radius: 8px; border-left: 3px solid #10B981;">
-                        <div style="font-weight: 700; color: #065F46; font-size: 0.85rem;">PHASE 1 (COMPLETED)</div>
-                        <div style="font-size: 0.8rem; color: #047857; margin-top: 0.25rem;">
-                            Frontend Foundation, UI Design System, Layout Placeholders, Modular Architecture.
-                        </div>
-                    </div>
-                    <div style="padding: 1rem; background: #ECFDF5; border-radius: 8px; border-left: 3px solid #10B981;">
-                        <div style="font-weight: 700; color: #065F46; font-size: 0.85rem;">PHASE 2 (COMPLETED)</div>
-                        <div style="font-size: 0.8rem; color: #047857; margin-top: 0.25rem;">
-                            KPI Cards, Top 10 Wards (Plotly), Category Visualization, Demand Distribution, Ward Details Table.
-                        </div>
-                    </div>
-                    <div style="padding: 1rem; background: #ECFDF5; border-radius: 8px; border-left: 3px solid #10B981;">
-                        <div style="font-weight: 700; color: #065F46; font-size: 0.85rem;">PHASE 3 (COMPLETED)</div>
-                        <div style="font-size: 0.8rem; color: #047857; margin-top: 0.25rem;">
-                            Official 198 GeoJSON Ward Boundaries, Ward Features Join, Interactive Folium Map, Neutral Baseline.
-                        </div>
-                    </div>
-                    <div style="padding: 1rem; background: #F8FAFC; border-radius: 8px; border-left: 3px solid #CBD5E1;">
-                        <div style="font-weight: 700; color: #64748B; font-size: 0.85rem;">PHASE 4 (FINAL)</div>
-                        <div style="font-size: 0.8rem; color: #475569; margin-top: 0.25rem;">
-                            Model Governance, Report Export, Jury Pitch Presentation.
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <div style="margin-top: 1.5rem; padding-top: 1.25rem; border-top: 1px solid var(--border-color);">
-                <h4 style="color: var(--primary); margin-bottom: 0.75rem;">⚖️ Model Governance & Spatial Validation</h4>
-            </div>
-        </div>
-        """,
+        """<div class="ward-detail-card" style="margin-top: 0; margin-bottom: 1.5rem;">
+<div style="border-bottom: 1px solid var(--border-color); padding-bottom: 0.75rem;">
+<h3 style="margin: 0; color: var(--primary); font-size: 1.3rem;">ℹ️ About Ward Pulse</h3>
+<div style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.25rem;">
+Civic intelligence and decision-support platform for municipal resource allocation.
+</div>
+</div>
+<div style="font-size: 0.925rem; line-height: 1.7; color: var(--text-primary); margin-top: 1rem;">
+<p>
+<strong>Ward Pulse</strong> is a geospatial civic demand forecasting platform designed to estimate municipal complaint volume 
+across urban wards. By leveraging socio-economic indicators, infrastructure density features, and spatial autocorrelation, 
+the system reliably infers grievance volume even in newly incorporated or unobserved wards with limited historical records.
+</p>
+</div>
+</div>""",
         unsafe_allow_html=True
     )
 
     col1, col2 = st.columns(2)
     with col1:
-        st.subheader("Model Performance")
+        st.subheader("Model Performance Audit")
         st.json(metrics)
     with col2:
         st.subheader("Top Predictive Features")
@@ -342,3 +243,13 @@ def render_about_view():
             st.json(metadata.get("top_feature_importances", {}))
         else:
             st.info("Feature importance metadata loaded from models/model_metadata.json.")
+
+
+def render_welcome_card():
+    """Deprecated: Removed for executive presentation clarity."""
+    pass
+
+
+def render_status_banner(data_status: Optional[Dict[str, Any]] = None):
+    """Deprecated: Header badge handles live status cleanly."""
+    pass

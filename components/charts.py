@@ -18,28 +18,20 @@ def render_analytics_placeholder():
     Renders the civic analytics section placeholder when datasets are missing or pending.
     """
     st.markdown(
-        """
-        <div class="section-card">
-            <div class="section-card-header">
-                <div>
-                    <div class="section-card-title">
-                        <span>📈</span> Ward-Wise Civic Analytics
-                    </div>
-                    <div class="section-card-subtitle">
-                        Comparative demand intelligence, complaint category distributions, and ward ranking
-                    </div>
-                </div>
-                <span class="placeholder-badge">Awaiting Data</span>
-            </div>
-            <div class="placeholder-box" style="min-height: 220px;">
-                <div class="placeholder-icon">📊</div>
-                <div class="placeholder-title">Civic Complaint Analytics Pending</div>
-                <div class="placeholder-desc">
-                    Analytics visualizations will render automatically once predictions are loaded.
-                </div>
-            </div>
-        </div>
-        """,
+        """<div class="section-card">
+<div class="section-card-header">
+<div>
+<div class="section-card-title"><span>📈</span> Ward-Wise Civic Analytics</div>
+<div class="section-card-subtitle">Comparative demand intelligence, complaint category distributions, and ward ranking</div>
+</div>
+<span class="placeholder-badge">Awaiting Data</span>
+</div>
+<div class="placeholder-box" style="min-height: 220px;">
+<div class="placeholder-icon">📊</div>
+<div class="placeholder-title">Civic Complaint Analytics Pending</div>
+<div class="placeholder-desc">Analytics visualizations will render automatically once predictions are loaded.</div>
+</div>
+</div>""",
         unsafe_allow_html=True
     )
 
@@ -145,21 +137,12 @@ def plot_category_visualization(df: pd.DataFrame):
     # Handle missing categories gracefully
     if not available_cats:
         st.markdown(
-            """
-            <div class="placeholder-box" style="min-height: 280px; padding: 2rem;">
-                <div class="placeholder-icon">🏷️</div>
-                <div class="placeholder-title">Category-Level Predictions Pending</div>
-                <div class="placeholder-desc">
-                    Department-level columns (<strong>Roads, Garbage, Water, Streetlights</strong>) are not present in the loaded dataset schema.
-                    Category projections will render automatically once department columns are provided in <code>data/predictions/ward_predictions.csv</code>.
-                </div>
-                <div style="margin-top: 1rem;">
-                    <span class="placeholder-badge" style="background: #F1F5F9; color: #64748B;">
-                        Awaiting Category Breakdowns
-                    </span>
-                </div>
-            </div>
-            """,
+            """<div class="placeholder-box" style="min-height: 280px; padding: 2rem;">
+<div class="placeholder-icon">🏷️</div>
+<div class="placeholder-title">Category-Level Predictions Pending</div>
+<div class="placeholder-desc">Department-level columns (<strong>Roads, Garbage, Water, Streetlights</strong>) are not present in the loaded dataset schema. Category projections will render automatically once department columns are provided in <code>data/predictions/ward_predictions.csv</code>.</div>
+<div style="margin-top: 1rem;"><span class="placeholder-badge" style="background: #F1F5F9; color: #64748B;">Awaiting Category Breakdowns</span></div>
+</div>""",
             unsafe_allow_html=True
         )
         return
@@ -241,7 +224,6 @@ def plot_demand_distribution(df: pd.DataFrame):
     col1, col2 = st.columns(2)
 
     with col1:
-        st.markdown('<div class="section-card">', unsafe_allow_html=True)
         # Histogram of complaint demand across wards
         mean_val = float(df["predicted_complaints"].mean())
         median_val = float(df["predicted_complaints"].median())
@@ -260,7 +242,7 @@ def plot_demand_distribution(df: pd.DataFrame):
             x=mean_val,
             line_dash="dash",
             line_color="#F59E0B",
-            annotation_text=f"Mean: {mean_val:.1f}",
+            annotation_text=f"City Mean: {mean_val:.1f}",
             annotation_position="top right"
         )
 
@@ -275,10 +257,8 @@ def plot_demand_distribution(df: pd.DataFrame):
             yaxis=dict(showgrid=True, gridcolor="#E2E8F0")
         )
         st.plotly_chart(fig_hist, use_container_width=True)
-        st.markdown('</div>', unsafe_allow_html=True)
 
     with col2:
-        st.markdown('<div class="section-card">', unsafe_allow_html=True)
         # Demand Level Distribution Bar Chart
         level_col = "demand_level" if "demand_level" in df.columns else "demand_tier"
         if level_col in df.columns:
@@ -287,8 +267,9 @@ def plot_demand_distribution(df: pd.DataFrame):
 
             level_colors = {
                 "Critical": "#EF4444",
-                "High": "#F59E0B",
-                "Medium": "#3B82F6",
+                "Very High": "#EF4444",
+                "High": "#F97316",
+                "Medium": "#F59E0B",
                 "Low": "#10B981"
             }
 
@@ -298,7 +279,7 @@ def plot_demand_distribution(df: pd.DataFrame):
                 y="Ward Count",
                 color="Demand Level",
                 color_discrete_map=level_colors,
-                title="🎯 Wards by Demand Priority Level",
+                title="🎯 Wards by Priority Demand Tier",
                 text="Ward Count"
             )
 
@@ -314,8 +295,7 @@ def plot_demand_distribution(df: pd.DataFrame):
             )
             st.plotly_chart(fig_level, use_container_width=True)
         else:
-            st.info("Demand level column not found in dataset.")
-        st.markdown('</div>', unsafe_allow_html=True)
+            st.info("Demand tier distribution pending prediction ingestion.")
 
 
 def render_ward_details_section(df: pd.DataFrame):
@@ -329,19 +309,12 @@ def render_ward_details_section(df: pd.DataFrame):
         return
 
     st.markdown(
-        """
-        <div class="section-card">
-            <div class="section-card-header">
-                <div>
-                    <div class="section-card-title">
-                        <span>📋</span> Ward-Level Details & Demand Intelligence
-                    </div>
-                    <div class="section-card-subtitle">
-                        Filterable and sortable registry of all monitored municipal wards
-                    </div>
-                </div>
-            </div>
-        """,
+        """<div class="section-card-header" style="margin-top: 1.5rem; margin-bottom: 0.75rem;">
+<div>
+<div class="section-card-title"><span>📋</span> Municipal Ward Registry & Demand Intelligence</div>
+<div class="section-card-subtitle">Searchable, filterable, and sortable registry of all monitored municipal wards</div>
+</div>
+</div>""",
         unsafe_allow_html=True
     )
 
@@ -351,7 +324,7 @@ def render_ward_details_section(df: pd.DataFrame):
     with col_search:
         search_query = st.text_input(
             "🔍 Search Ward Name or ID",
-            placeholder="Type name (e.g. Hazratganj) or ID...",
+            placeholder="Search by ward name or numeric ID...",
             key="ward_details_search"
         )
 
@@ -452,12 +425,10 @@ def render_ward_details_section(df: pd.DataFrame):
         mime="text/csv"
     )
 
-    st.markdown("</div>", unsafe_allow_html=True)
-
 
 def render_analytics_section(df: Optional[pd.DataFrame] = None, df_summary: Optional[pd.DataFrame] = None):
     """
-    Renders the unified Phase 2 Analytics section:
+    Renders the unified Analytics section:
     - Top 10 wards (Plotly)
     - Complaint Category Visualization (Roads, garbage, water, streetlights)
     - Demand Distribution (Histogram + Level Breakdown)
@@ -469,36 +440,13 @@ def render_analytics_section(df: Optional[pd.DataFrame] = None, df_summary: Opti
         render_analytics_placeholder()
         return
 
-    st.markdown(
-        """
-        <div class="section-card">
-            <div class="section-card-header">
-                <div>
-                    <div class="section-card-title">
-                        <span>📈</span> Ward-Wise Civic Demand Analytics
-                    </div>
-                    <div class="section-card-subtitle">
-                        Top demand centers, category distributions, and predictive demand modeling
-                    </div>
-                </div>
-                <span class="badge badge-live">Phase 2 Active</span>
-            </div>
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
-
     # 1. Top 10 Wards & Category Breakdown
     col1, col2 = st.columns(2)
     with col1:
-        st.markdown('<div class="section-card">', unsafe_allow_html=True)
         plot_top_10_wards(active_df)
-        st.markdown('</div>', unsafe_allow_html=True)
 
     with col2:
-        st.markdown('<div class="section-card">', unsafe_allow_html=True)
         plot_category_visualization(active_df)
-        st.markdown('</div>', unsafe_allow_html=True)
 
     # 2. Demand Distribution
     plot_demand_distribution(active_df)
