@@ -55,6 +55,7 @@ def render_sidebar(data_status: Dict[str, Any]) -> str:
             "📊 Overview",
             "📈 Ward Analytics",
             "🗺️ Map View",
+            "⚖️ Model Governance",
             "ℹ️ About Project"
         ]
         

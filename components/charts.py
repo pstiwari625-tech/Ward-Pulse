@@ -411,10 +411,27 @@ def render_ward_details_section(df: pd.DataFrame):
 
     # Determine display columns
     core_cols = ["ward_id", "ward_name", "predicted_complaints", "demand_level"]
+    
+    # Include 90% confidence intervals, confidence labels, and rank stability if present
+    interval_cols = []
+    if "total_lower_90" in filtered_df.columns and "total_upper_90" in filtered_df.columns:
+        filtered_df["90% Interval"] = filtered_df.apply(
+            lambda r: f"[{float(r['total_lower_90']):.1f}, {float(r['total_upper_90']):.1f}]", axis=1
+        )
+        interval_cols.append("90% Interval")
+    if "confidence_label" in filtered_df.columns:
+        filtered_df["Confidence"] = filtered_df["confidence_label"].astype(str)
+        interval_cols.append("Confidence")
+    if "rank_flip_prob" in filtered_df.columns:
+        filtered_df["Rank Stability"] = filtered_df["rank_flip_prob"].apply(
+            lambda v: f"{float(v):.2f}" if pd.notnull(v) else "--"
+        )
+        interval_cols.append("Rank Stability")
+
     category_cols = [c for c in ["electrical", "solid_waste", "roads", "animals_health", "trees", "other"] if c in filtered_df.columns]
     
     # Keep only available relevant columns
-    cols_to_show = [c for c in core_cols if c in filtered_df.columns] + category_cols
+    cols_to_show = [c for c in core_cols if c in filtered_df.columns] + interval_cols + category_cols
     display_df = filtered_df[cols_to_show].copy()
 
     # Rename for professional table headers

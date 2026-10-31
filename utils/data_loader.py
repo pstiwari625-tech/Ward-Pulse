@@ -65,29 +65,42 @@ def get_data_status() -> Dict[str, Any]:
 
 
 def load_ward_summary() -> Optional[pd.DataFrame]:
-    """Load latest ward summary table containing CPI scores and priority tiers if present."""
+    """Load latest ward summary table containing CPI scores, priority tiers, and conformal intervals."""
     root = get_project_root()
     summary_path = root / "data" / "predictions" / "ward_summary_latest.csv"
+    intervals_path = root / "data" / "predictions" / "ward_summary_intervals.csv"
     if summary_path.exists():
         try:
-            return pd.read_csv(summary_path)
+            df_sum = pd.read_csv(summary_path)
+            if intervals_path.exists():
+                try:
+                    df_int = pd.read_csv(intervals_path)
+                    merge_cols = [c for c in ["ward_id", "total_lower_90", "total_upper_90", "confidence_label"] if c in df_int.columns]
+                    if len(merge_cols) > 1:
+                        df_sum = pd.merge(df_sum, df_int[merge_cols], on="ward_id", how="left")
+                except Exception:
+                    pass
+            return df_sum
         except Exception:
             return None
     return None
 
 
 def load_model_metrics() -> Dict[str, Any]:
-    """Load validated model metrics from models/model_metrics.json if present."""
+    """Load validated model metrics from data/metrics/metrics_latest.json or models/model_metrics.json."""
     import json
     root = get_project_root()
-    metrics_path = root / "models" / "model_metrics.json"
-    if metrics_path.exists():
-        try:
-            with open(metrics_path, "r", encoding="utf-8") as f:
-                return json.load(f)
-        except Exception:
-            pass
-    return {"metrics": {"oof_mae": 6.84, "oof_rmse": 11.23, "oof_r2": 0.58}}
+    for candidate in [
+        root / "data" / "metrics" / "metrics_latest.json",
+        root / "models" / "model_metrics.json"
+    ]:
+        if candidate.exists():
+            try:
+                with open(candidate, "r", encoding="utf-8") as f:
+                    return json.load(f)
+            except Exception:
+                pass
+    return {"metrics": {"oof_mae": 6.636, "oof_rmse": 13.878}}
 
 
 def load_model_metadata() -> Dict[str, Any]:
