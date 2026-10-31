@@ -144,7 +144,9 @@ def normalize_ward_dataframe(df: pd.DataFrame) -> pd.DataFrame:
 
     # 1. Normalize predicted complaints column
     if "predicted_complaints" not in df.columns:
-        if "predicted_count" in df.columns:
+        if "total_monthly_demand" in df.columns:
+            df["predicted_complaints"] = df["total_monthly_demand"]
+        elif "predicted_count" in df.columns:
             df["predicted_complaints"] = df["predicted_count"]
         elif "total_predicted_monthly" in df.columns:
             df["predicted_complaints"] = df["total_predicted_monthly"]
@@ -244,8 +246,26 @@ def load_ward_predictions() -> Tuple[Optional[pd.DataFrame], Dict[str, Any]]:
     2. Fallback to sample preview if official file is absent.
     """
     root = get_project_root()
+    master_path = root / "data" / "predictions" / "all_wards_master.csv"
     official_path = root / "data" / "predictions" / "ward_predictions.csv"
     summary_path = root / "data" / "predictions" / "ward_summary_latest.csv"
+
+    # Scenario 0: Comprehensive 198-ward Master Dataset exists
+    if master_path.exists():
+        try:
+            raw_df = pd.read_csv(master_path)
+            df = normalize_ward_dataframe(raw_df)
+            status = {
+                "is_official": True,
+                "status_text": "Official 198-Ward Municipal Grid Active",
+                "badge_class": "badge-live",
+                "badge_label": "Official 198 Wards Connected",
+                "file_path": str(master_path),
+                "description": "Consuming unified municipal grid: 40 target wards (ML forecasted) + 158 training wards (observed baseline)."
+            }
+            return df, status
+        except Exception:
+            pass
 
     # Scenario 1: Official predictions file exists
     if official_path.exists():
@@ -361,6 +381,17 @@ def get_kpi_metrics(df: Optional[pd.DataFrame], df_summary: Optional[pd.DataFram
 
         pct_high = round((high_demand_count / max(1, total_wards)) * 100, 1)
         high_demand_str = f"{high_demand_count} Wards ({pct_high}%)"
+
+        # Determine highest demand ward
+        highest_demand_str = "--"
+        if not active_df.empty and "predicted_complaints" in active_df.columns:
+            valid_rows = active_df[pd.to_numeric(active_df["predicted_complaints"], errors="coerce").notnull()]
+            if not valid_rows.empty:
+                max_idx = valid_rows["predicted_complaints"].idxmax()
+                max_row = valid_rows.loc[max_idx]
+                wname = max_row.get("ward_name", f"Ward {max_row.get('ward_id', '--')}")
+                wval = float(max_row["predicted_complaints"])
+                highest_demand_str = f"{wname} ({wval:,.1f})"
 
         # Determine top demanding category
         cat_cols = [c for c in ["roads", "solid_waste", "electrical", "animals_health", "trees", "other"] if c in active_df.columns]

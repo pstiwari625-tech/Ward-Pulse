@@ -392,11 +392,11 @@ def render_ward_details_section(df: pd.DataFrame):
 
     if search_query.strip():
         q = search_query.strip().lower()
-        name_col = "ward_name" if "ward_name" in filtered_df.columns else "ward_id"
-        filtered_df = filtered_df[
-            filtered_df[name_col].astype(str).str.lower().str.contains(q) |
-            filtered_df["ward_id"].astype(str).str.contains(q)
-        ]
+        search_cols = [c for c in ["ward_name", "ward_id", "zone", "priority_tier", "ward_type"] if c in filtered_df.columns]
+        mask = False
+        for c in search_cols:
+            mask = mask | filtered_df[c].astype(str).str.lower().str.contains(q)
+        filtered_df = filtered_df[mask]
 
     # Apply sorting
     if sort_choice == "Predicted Complaints (Highest First)":
@@ -410,36 +410,44 @@ def render_ward_details_section(df: pd.DataFrame):
         filtered_df = filtered_df.sort_values(by="ward_id", ascending=True)
 
     # Determine display columns
-    core_cols = ["ward_id", "ward_name", "predicted_complaints", "demand_level"]
+    core_cols = ["ward_id", "ward_name", "ward_type", "zone", "priority_tier", "predicted_complaints"]
     
-    # Include 90% confidence intervals, confidence labels, and rank stability if present
-    interval_cols = []
-    if "total_lower_90" in filtered_df.columns and "total_upper_90" in filtered_df.columns:
-        filtered_df["90% Interval"] = filtered_df.apply(
+    # Include 90% confidence intervals, confidence labels, and cpi if present
+    extra_cols = []
+    if "interval_90_str" in filtered_df.columns:
+        extra_cols.append("interval_90_str")
+    elif "total_lower_90" in filtered_df.columns and "total_upper_90" in filtered_df.columns:
+        filtered_df["interval_90_str"] = filtered_df.apply(
             lambda r: f"[{float(r['total_lower_90']):.1f}, {float(r['total_upper_90']):.1f}]", axis=1
         )
-        interval_cols.append("90% Interval")
-    if "confidence_label" in filtered_df.columns:
-        filtered_df["Confidence"] = filtered_df["confidence_label"].astype(str)
-        interval_cols.append("Confidence")
-    if "rank_flip_prob" in filtered_df.columns:
-        filtered_df["Rank Stability"] = filtered_df["rank_flip_prob"].apply(
-            lambda v: f"{float(v):.2f}" if pd.notnull(v) else "--"
-        )
-        interval_cols.append("Rank Stability")
+        extra_cols.append("interval_90_str")
+
+    if "confidence_tier" in filtered_df.columns:
+        extra_cols.append("confidence_tier")
+    elif "confidence_label" in filtered_df.columns:
+        filtered_df["confidence_tier"] = filtered_df["confidence_label"].astype(str)
+        extra_cols.append("confidence_tier")
+
+    if "cpi_score" in filtered_df.columns:
+        extra_cols.append("cpi_score")
 
     category_cols = [c for c in ["electrical", "solid_waste", "roads", "animals_health", "trees", "other"] if c in filtered_df.columns]
     
     # Keep only available relevant columns
-    cols_to_show = [c for c in core_cols if c in filtered_df.columns] + interval_cols + category_cols
+    cols_to_show = [c for c in core_cols if c in filtered_df.columns] + extra_cols + category_cols
     display_df = filtered_df[cols_to_show].copy()
 
     # Rename for professional table headers
     rename_dict = {
         "ward_id": "Ward ID",
         "ward_name": "Ward Name",
-        "predicted_complaints": "Predicted Complaints",
-        "demand_level": "Demand Level",
+        "ward_type": "Grid Status",
+        "zone": "Zone",
+        "priority_tier": "Priority Tier",
+        "predicted_complaints": "Monthly Demand",
+        "interval_90_str": "90% Conformal Interval",
+        "confidence_tier": "Confidence Rating",
+        "cpi_score": "CPI Score",
         "electrical": "Electrical",
         "solid_waste": "Solid Waste",
         "roads": "Roads",
@@ -450,8 +458,10 @@ def render_ward_details_section(df: pd.DataFrame):
     display_df = display_df.rename(columns=rename_dict)
 
     # Format numeric values
-    if "Predicted Complaints" in display_df.columns:
-        display_df["Predicted Complaints"] = display_df["Predicted Complaints"].round(1)
+    if "Monthly Demand" in display_df.columns:
+        display_df["Monthly Demand"] = display_df["Monthly Demand"].round(1)
+    if "CPI Score" in display_df.columns:
+        display_df["CPI Score"] = display_df["CPI Score"].round(3)
     for cat in ["Electrical", "Solid Waste", "Roads", "Animals & Health", "Trees", "Other"]:
         if cat in display_df.columns:
             display_df[cat] = display_df[cat].round(1)

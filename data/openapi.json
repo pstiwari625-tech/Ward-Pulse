@@ -1,0 +1,518 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "\ud83c\udfdb\ufe0f Ward Pulse Municipal Intelligence API",
+    "description": "\n### Civic Demand Forecasting & Spatial Prioritization for Municipal Governance\n\n**Ward Pulse** delivers high-resolution spatial predictions for 40 unobserved Bangalore municipal wards\nacross 6 civic complaint categories over an 18-month horizon (2024-01 to 2025-06).\n\n#### Core Capabilities:\n- **Spatial Imputation & Demand Forecasting**: 156-fold Leave-One-Ward-Out (LOWO) validated Ridge + Kernel Kriging model.\n- **Conformal Prediction Intervals**: 90% finite-sample uncertainty bounds calibrated via Mondrian volume tertiles.\n- **Composite Priority Indexing (CPI)**: Multi-attribute civic urgency scoring with Monte Carlo robustness validation.\n- **Complete 198-Ward Grid**: Unified data access covering all 40 prediction target wards and 158 training baseline wards.\n\n#### Live Web Application:\n- [https://ward-pulse-8qvy.onrender.com/](https://ward-pulse-8qvy.onrender.com/)\n    ",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/api/v1/health": {
+      "get": {
+        "tags": [
+          "Health & Status"
+        ],
+        "summary": "Health Check",
+        "description": "Check API server health and loaded dataset statistics.",
+        "operationId": "health_check_api_v1_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/wards": {
+      "get": {
+        "tags": [
+          "Ward Projections & Directory"
+        ],
+        "summary": "List Wards",
+        "description": "Query all 198 municipal wards in Bangalore.\nReturns both ML-forecasted target wards and historical training baseline wards.",
+        "operationId": "list_wards_api_v1_wards_get",
+        "parameters": [
+          {
+            "name": "zone",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by BBMP administrative zone",
+              "title": "Zone"
+            },
+            "description": "Filter by BBMP administrative zone"
+          },
+          {
+            "name": "is_target_only",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter strictly to the 40 target prediction wards",
+              "title": "Is Target Only"
+            },
+            "description": "Filter strictly to the 40 target prediction wards"
+          },
+          {
+            "name": "priority_tier",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by priority tier (CRITICAL, HIGH, MEDIUM, LOW)",
+              "title": "Priority Tier"
+            },
+            "description": "Filter by priority tier (CRITICAL, HIGH, MEDIUM, LOW)"
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Case-insensitive search by ward name or ward ID",
+              "title": "Search"
+            },
+            "description": "Case-insensitive search by ward name or ward ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/WardSummaryModel"
+                  },
+                  "title": "Response List Wards Api V1 Wards Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/wards/{ward_id}": {
+      "get": {
+        "tags": [
+          "Ward Projections & Directory"
+        ],
+        "summary": "Get Ward Details",
+        "description": "Get complete civic intelligence profile for a specific ward.\nIncludes exact monthly predictions, 90% conformal intervals, department breakdowns, and CPI score.",
+        "operationId": "get_ward_details_api_v1_wards__ward_id__get",
+        "parameters": [
+          {
+            "name": "ward_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Ward Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WardSummaryModel"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/critical-wards": {
+      "get": {
+        "tags": [
+          "Judge & Audit Inspection"
+        ],
+        "summary": "Get Critical Wards",
+        "description": "Quick query for Hackathon Judges & Municipal Leadership:\nReturns all CRITICAL and HIGH priority target wards ranked by urgency (CPI Score descending).",
+        "operationId": "get_critical_wards_api_v1_critical_wards_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/WardSummaryModel"
+                  },
+                  "type": "array",
+                  "title": "Response Get Critical Wards Api V1 Critical Wards Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/predictions": {
+      "get": {
+        "tags": [
+          "Data Contract Submissions"
+        ],
+        "summary": "Get Raw Predictions Matrix",
+        "description": "Query the official 4,320-row prediction contract matrix from data/predictions/ward_predictions.csv.",
+        "operationId": "get_raw_predictions_matrix_api_v1_predictions_get",
+        "parameters": [
+          {
+            "name": "ward_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by specific ward ID",
+              "title": "Ward Id"
+            },
+            "description": "Filter by specific ward ID"
+          },
+          {
+            "name": "month",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by prediction month (e.g., 2024-05)",
+              "title": "Month"
+            },
+            "description": "Filter by prediction month (e.g., 2024-05)"
+          },
+          {
+            "name": "category_group",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by complaint category (roads, solid_waste, electrical, etc.)",
+              "title": "Category Group"
+            },
+            "description": "Filter by complaint category (roads, solid_waste, electrical, etc.)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/metrics": {
+      "get": {
+        "tags": [
+          "Model Governance & Auditing"
+        ],
+        "summary": "Get Governance Metrics",
+        "description": "Returns empirical spatial cross-validation benchmarks and conformal coverage statistics.\nValidated across 156 Leave-One-Ward-Out (LOWO) spatial folds.",
+        "operationId": "get_governance_metrics_api_v1_metrics_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      },
+      "WardSummaryModel": {
+        "properties": {
+          "ward_id": {
+            "type": "integer",
+            "title": "Ward Id",
+            "example": 6
+          },
+          "ward_name": {
+            "type": "string",
+            "title": "Ward Name",
+            "example": "Thanisandra"
+          },
+          "zone": {
+            "type": "string",
+            "title": "Zone",
+            "example": "Byatarayanapura"
+          },
+          "ward_type": {
+            "type": "string",
+            "title": "Ward Type",
+            "example": "Target Ward (ML Forecast)"
+          },
+          "is_target": {
+            "type": "boolean",
+            "title": "Is Target",
+            "example": true
+          },
+          "population": {
+            "type": "integer",
+            "title": "Population",
+            "example": 55342
+          },
+          "area_sq_km": {
+            "type": "number",
+            "title": "Area Sq Km",
+            "example": 6.82
+          },
+          "total_monthly_demand": {
+            "type": "number",
+            "title": "Total Monthly Demand",
+            "example": 268.7
+          },
+          "total_18m_demand": {
+            "type": "number",
+            "title": "Total 18M Demand",
+            "example": 4835.8
+          },
+          "lower_90": {
+            "type": "number",
+            "title": "Lower 90",
+            "example": 159.2
+          },
+          "upper_90": {
+            "type": "number",
+            "title": "Upper 90",
+            "example": 378.1
+          },
+          "interval_90_str": {
+            "type": "string",
+            "title": "Interval 90 Str",
+            "example": "[159.2, 378.1]"
+          },
+          "confidence_tier": {
+            "type": "string",
+            "title": "Confidence Tier",
+            "example": "Low"
+          },
+          "priority_tier": {
+            "type": "string",
+            "title": "Priority Tier",
+            "example": "CRITICAL"
+          },
+          "cpi_score": {
+            "type": "number",
+            "title": "Cpi Score",
+            "example": 0.724
+          },
+          "top_category": {
+            "type": "string",
+            "title": "Top Category",
+            "example": "electrical"
+          },
+          "rank_flip_stability": {
+            "type": "number",
+            "title": "Rank Flip Stability",
+            "example": 0.96
+          },
+          "electrical": {
+            "type": "number",
+            "title": "Electrical",
+            "example": 96.1
+          },
+          "solid_waste": {
+            "type": "number",
+            "title": "Solid Waste",
+            "example": 75.2
+          },
+          "roads": {
+            "type": "number",
+            "title": "Roads",
+            "example": 38.9
+          },
+          "animals_health": {
+            "type": "number",
+            "title": "Animals Health",
+            "example": 25.2
+          },
+          "trees": {
+            "type": "number",
+            "title": "Trees",
+            "example": 15.1
+          },
+          "other": {
+            "type": "number",
+            "title": "Other",
+            "example": 18.2
+          }
+        },
+        "type": "object",
+        "required": [
+          "ward_id",
+          "ward_name",
+          "zone",
+          "ward_type",
+          "is_target",
+          "population",
+          "area_sq_km",
+          "total_monthly_demand",
+          "total_18m_demand",
+          "lower_90",
+          "upper_90",
+          "interval_90_str",
+          "confidence_tier",
+          "priority_tier",
+          "cpi_score",
+          "top_category",
+          "rank_flip_stability",
+          "electrical",
+          "solid_waste",
+          "roads",
+          "animals_health",
+          "trees",
+          "other"
+        ],
+        "title": "WardSummaryModel"
+      }
+    }
+  }
+}

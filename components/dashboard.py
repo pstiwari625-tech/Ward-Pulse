@@ -175,6 +175,135 @@ def render_kpi_cards(df: Optional[pd.DataFrame], df_summary: Optional[pd.DataFra
     )
 
 
+def apply_sidebar_filters(df: Optional[pd.DataFrame]) -> Optional[pd.DataFrame]:
+    """Applies sidebar zone, scope, and specific ward filters to active dataframe."""
+    if df is None or df.empty:
+        return df
+
+    filtered = df.copy()
+
+    # 1. Zone filter
+    selected_zone = st.session_state.get("filter_zone", "All Administrative Zones")
+    if selected_zone and selected_zone != "All Administrative Zones" and "zone" in filtered.columns:
+        filtered = filtered[filtered["zone"] == selected_zone]
+
+    # 2. Scope filter (Target vs Critical vs All)
+    selected_scope = st.session_state.get("filter_scope", "All 198 Wards")
+    if selected_scope == "🎯 40 Target Wards Only" and "is_target" in filtered.columns:
+        filtered = filtered[filtered["is_target"] == True]
+    elif selected_scope == "🚨 Critical & High Priority Wards" and "priority_tier" in filtered.columns:
+        if "is_target" in filtered.columns:
+            filtered = filtered[filtered["is_target"] & filtered["priority_tier"].isin(["CRITICAL", "HIGH"])]
+        else:
+            filtered = filtered[filtered["priority_tier"].isin(["CRITICAL", "HIGH"])]
+
+    # 3. Specific Ward filter
+    selected_ward = st.session_state.get("filter_ward", "All Municipal Wards")
+    if selected_ward and selected_ward != "All Municipal Wards":
+        import re
+        match = re.search(r"Ward\s+(\d+)", selected_ward)
+        if match and "ward_id" in filtered.columns:
+            target_id = int(match.group(1))
+            filtered = filtered[filtered["ward_id"] == target_id]
+
+    return filtered
+
+
+def render_ward_briefing_card(ward_row: pd.Series):
+    """Renders a comprehensive executive briefing card for an individually selected ward."""
+    wid = int(ward_row["ward_id"])
+    wname = ward_row.get("ward_name", f"Ward {wid}")
+    zone = ward_row.get("zone", "BBMP")
+    is_target = bool(ward_row.get("is_target", False))
+    ptier = str(ward_row.get("priority_tier", "MEDIUM")).upper()
+    cpi = float(ward_row.get("cpi_score", 0.5))
+    monthly_pred = float(ward_row.get("predicted_complaints", 0.0))
+    total_18m = float(ward_row.get("total_18m_demand", monthly_pred * 18))
+    int_str = str(ward_row.get("interval_90_str", "--"))
+    conf = str(ward_row.get("confidence_tier", "Moderate"))
+    top_c = str(ward_row.get("top_category", "solid_waste")).replace("_", " ").title()
+
+    tier_color = "#DC2626" if ptier == "CRITICAL" else ("#EA580C" if ptier == "HIGH" else "#2563EB")
+    tier_bg = "#FEF2F2" if ptier == "CRITICAL" else ("#FFF7ED" if ptier == "HIGH" else "#EFF6FF")
+    status_label = "🎯 Target Ward (ML Forecast Model)" if is_target else "🏛️ Training Ward (Historical Ground Truth)"
+
+    st.markdown(
+        f"""
+        <div class="section-card" style="border-left: 4px solid {tier_color}; margin-bottom: 1.5rem;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem;">
+                <div>
+                    <div style="font-size: 1.4rem; font-weight: 800; color: #1E293B;">
+                        Ward {wid} — {wname}
+                    </div>
+                    <div style="font-size: 0.85rem; color: #64748B; margin-top: 0.25rem;">
+                        Zone: <strong>{zone}</strong> • {status_label}
+                    </div>
+                </div>
+                <div style="display: flex; gap: 0.5rem; align-items: center;">
+                    <span class="badge" style="background: {tier_bg}; color: {tier_color}; font-size: 0.85rem; font-weight: 700; border: 1px solid {tier_color}; padding: 0.35rem 0.75rem; border-radius: 6px;">
+                        {ptier} PRIORITY (CPI: {cpi:.3f})
+                    </span>
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-top: 1.25rem;">
+                <div style="background: #F8FAFC; padding: 0.75rem 1rem; border-radius: 8px; border: 1px solid #E2E8F0;">
+                    <div style="font-size: 0.75rem; color: #64748B; text-transform: uppercase; font-weight: 600;">Monthly Demand</div>
+                    <div style="font-size: 1.35rem; font-weight: 800; color: #168C83; margin-top: 0.2rem;">{monthly_pred:,.1f}</div>
+                    <div style="font-size: 0.72rem; color: #94A3B8;">complaints / month</div>
+                </div>
+                <div style="background: #F8FAFC; padding: 0.75rem 1rem; border-radius: 8px; border: 1px solid #E2E8F0;">
+                    <div style="font-size: 0.75rem; color: #64748B; text-transform: uppercase; font-weight: 600;">90% Conformal Interval</div>
+                    <div style="font-size: 1.15rem; font-weight: 700; color: #1E293B; margin-top: 0.2rem;">{int_str}</div>
+                    <div style="font-size: 0.72rem; color: #94A3B8;">Confidence: {conf}</div>
+                </div>
+                <div style="background: #F8FAFC; padding: 0.75rem 1rem; border-radius: 8px; border: 1px solid #E2E8F0;">
+                    <div style="font-size: 0.75rem; color: #64748B; text-transform: uppercase; font-weight: 600;">18-Month Total</div>
+                    <div style="font-size: 1.35rem; font-weight: 800; color: #1E293B; margin-top: 0.2rem;">{total_18m:,.0f}</div>
+                    <div style="font-size: 0.72rem; color: #94A3B8;">2024-01 to 2025-06</div>
+                </div>
+                <div style="background: #F8FAFC; padding: 0.75rem 1rem; border-radius: 8px; border: 1px solid #E2E8F0;">
+                    <div style="font-size: 0.75rem; color: #64748B; text-transform: uppercase; font-weight: 600;">Dominant Civic Need</div>
+                    <div style="font-size: 1.2rem; font-weight: 700; color: #EA580C; margin-top: 0.2rem;">{top_c}</div>
+                    <div style="font-size: 0.72rem; color: #94A3B8;">Primary department</div>
+                </div>
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+
+def render_critical_wards_highlight(df: pd.DataFrame):
+    """Renders a quick-reference briefing of critical and high priority target wards for judges."""
+    if "is_target" not in df.columns or "priority_tier" not in df.columns:
+        return
+    
+    crit_wards = df[df["is_target"] & df["priority_tier"].isin(["CRITICAL", "HIGH"])].sort_values(
+        by="predicted_complaints", ascending=False
+    )
+    if crit_wards.empty:
+        return
+
+    with st.expander(f"🚨 Judge Inspection Console: Top Critical & High Priority Target Wards ({len(crit_wards)} Wards)", expanded=True):
+        st.caption("Directly query and inspect unobserved target wards with peak civic urgency, 90% conformal prediction intervals, and priority indexing.")
+        display_crit = crit_wards[[
+            "ward_id", "ward_name", "zone", "priority_tier", "predicted_complaints", 
+            "interval_90_str", "confidence_tier", "cpi_score", "top_category"
+        ]].rename(columns={
+            "ward_id": "Ward ID",
+            "ward_name": "Ward Name",
+            "zone": "Zone",
+            "priority_tier": "Priority Tier",
+            "predicted_complaints": "Monthly Forecast",
+            "interval_90_str": "90% Conformal Interval",
+            "confidence_tier": "Confidence",
+            "cpi_score": "CPI Score",
+            "top_category": "Top Civic Need"
+        })
+        st.dataframe(display_crit, use_container_width=True, hide_index=True)
+
+
 def render_overview(df: Optional[pd.DataFrame], data_status: Dict[str, Any], df_summary: Optional[pd.DataFrame] = None, geojson_data: Optional[Dict[str, Any]] = None):
     """
     Renders the primary dashboard Overview tab:
@@ -190,9 +319,15 @@ def render_overview(df: Optional[pd.DataFrame], data_status: Dict[str, Any], df_
     render_welcome_card()
     render_kpi_cards(df, df_summary)
 
-    active_df = df if df is not None and not df.empty else df_summary
+    active_df = apply_sidebar_filters(df) if df is not None and not df.empty else df_summary
 
     if active_df is not None and not active_df.empty:
+        # If a single ward is selected, render the dedicated Executive Ward Briefing Card!
+        if len(active_df) == 1:
+            render_ward_briefing_card(active_df.iloc[0])
+        else:
+            # Render Judge Critical Wards Highlight Bar
+            render_critical_wards_highlight(active_df)
         # 1. Top 10 Wards & Category Breakdown side-by-side
         col1, col2 = st.columns(2)
         with col1:
@@ -581,4 +716,99 @@ def render_governance_view():
         3. **Inductive vs Transductive Evaluation**: In real deployment, contemporaneous complaint counts for the target month would not be observed. Judges should note that this dataset tests spatial imputation across shared contemporaneous months.
         """
     )
+    st.markdown('</div>', unsafe_allow_html=True)
+
+
+def render_swagger_api_view():
+    """Renders interactive Swagger API Documentation and REST endpoints."""
+    st.markdown(
+        """
+        <div style="margin-bottom: 1.5rem;">
+            <h2 style="color: var(--primary); margin-bottom: 0.25rem;">⚡ Swagger API Documentation & REST Explorer</h2>
+            <p style="color: var(--text-secondary); margin: 0;">Automated OpenAPI 3.0 specification for municipal complaint forecasts, conformal intervals, and priority ranking.</p>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+    st.markdown(
+        """
+        <div class="section-card" style="margin-bottom: 1.5rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                <div>
+                    <h3 style="margin: 0; color: #1E293B;">🏛️ Ward Pulse RESTful Prediction Engine</h3>
+                    <p style="margin: 0.25rem 0 0 0; color: #64748B; font-size: 0.9rem;">
+                        Live endpoints for municipal leadership, smart-city operations, and hackathon jury audit.
+                    </p>
+                </div>
+                <div>
+                    <a href="https://ward-pulse-8qvy.onrender.com/docs" target="_blank" style="text-decoration: none;">
+                        <button style="background: #168C83; color: white; border: none; padding: 0.6rem 1.2rem; border-radius: 6px; font-weight: 600; cursor: pointer;">
+                            🚀 Open Live Swagger UI (Render)
+                        </button>
+                    </a>
+                </div>
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+    # API Endpoints Quick Reference Table
+    endpoints = [
+        {"Method": "GET", "Endpoint": "/api/v1/critical-wards", "Description": "Query all CRITICAL and HIGH priority target wards ranked by urgency (CPI score).", "Sample Response": "Ward 6 Thanisandra (CPI 0.724), Ward 5 Jakkuru (CPI 0.695)..."},
+        {"Method": "GET", "Endpoint": "/api/v1/wards", "Description": "List all 198 municipal wards with filters (zone, is_target_only, priority_tier, search).", "Sample Response": "Array of 198 complete ward profiles."},
+        {"Method": "GET", "Endpoint": "/api/v1/wards/{ward_id}", "Description": "Get complete civic intelligence profile for a specific ward (demographics, 90% conformal interval, category projections).", "Sample Response": "Detailed ward JSON with category predictions & bounds."},
+        {"Method": "GET", "Endpoint": "/api/v1/predictions", "Description": "Query official 4,320-row prediction contract matrix with optional ward, month, or category filters.", "Sample Response": "4,320 prediction cells matching sample_submission.csv."},
+        {"Method": "GET", "Endpoint": "/api/v1/metrics", "Description": "Model governance benchmarks (156-fold LOWO MAE 6.636, RMSE 13.878, Kendall tau 0.946).", "Sample Response": "Spatial cross-validation & conformal coverage JSON."},
+        {"Method": "GET", "Endpoint": "/api/v1/health", "Description": "Service health check and loaded ward counts.", "Sample Response": "{\"status\": \"healthy\", \"total_wards_loaded\": 198...}"}
+    ]
+    st.table(endpoints)
+
+    # Download OpenAPI JSON
+    from utils.data_loader import get_project_root
+    openapi_file = get_project_root() / "data" / "openapi.json"
+    if openapi_file.exists():
+        with open(openapi_file, "rb") as f:
+            st.download_button(
+                label="📥 Download Complete OpenAPI 3.0 Specification (openapi.json)",
+                data=f.read(),
+                file_name="openapi.json",
+                mime="application/json",
+                use_container_width=True
+            )
+
+    # Render Swagger UI iframe / embedded view
+    st.markdown('<div class="section-card">', unsafe_allow_html=True)
+    st.write("### 📖 Embedded Swagger UI Console")
+    import streamlit.components.v1 as components
+    swagger_html = """
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="utf-8" />
+      <title>Swagger UI</title>
+      <link rel="stylesheet" href="https://unpkg.com/swagger-ui-dist@5.11.0/swagger-ui.css" />
+    </head>
+    <body style="margin: 0; background: #fafafa;">
+      <div id="swagger-ui"></div>
+      <script src="https://unpkg.com/swagger-ui-dist@5.11.0/swagger-ui-bundle.js" charset="UTF-8"></script>
+      <script>
+        window.onload = function() {
+          window.ui = SwaggerUIBundle({
+            url: "https://raw.githubusercontent.com/pstiwari625-tech/Ward-Pulse/main/data/openapi.json",
+            dom_id: '#swagger-ui',
+            deepLinking: true,
+            presets: [
+              SwaggerUIBundle.presets.apis,
+              SwaggerUIBundle.SwaggerUIStandalonePreset
+            ],
+            layout: "BaseLayout"
+          });
+        };
+      </script>
+    </body>
+    </html>
+    """
+    components.html(swagger_html, height=800, scrolling=True)
     st.markdown('</div>', unsafe_allow_html=True)

@@ -56,6 +56,7 @@ def render_sidebar(data_status: Dict[str, Any]) -> str:
             "📈 Ward Analytics",
             "🗺️ Map View",
             "⚖️ Model Governance",
+            "⚡ Swagger API",
             "ℹ️ About Project"
         ]
         
@@ -63,6 +64,7 @@ def render_sidebar(data_status: Dict[str, Any]) -> str:
             label="Dashboard Navigation",
             options=nav_options,
             index=0,
+            key="dashboard_nav_radio",
             label_visibility="collapsed"
         )
         
@@ -71,6 +73,21 @@ def render_sidebar(data_status: Dict[str, Any]) -> str:
         # Municipal Filtering Section
         st.markdown('<div class="sidebar-section-title">Municipal Jurisdiction</div>', unsafe_allow_html=True)
         
+        # Scope Filter for Judges
+        scope_options = [
+            "All 198 Wards",
+            "🎯 40 Target Wards Only",
+            "🚨 Critical & High Priority Wards"
+        ]
+        selected_scope = st.selectbox(
+            label="Ward Scope Filter",
+            options=scope_options,
+            index=0,
+            key="sidebar_scope_select",
+            help="Filter view by unobserved target wards or urgent critical priority wards."
+        )
+        st.session_state["filter_scope"] = selected_scope
+
         df_feat, zones = get_official_zones_and_wards()
         zone_options = ["All Administrative Zones"] + zones
         
@@ -83,15 +100,50 @@ def render_sidebar(data_status: Dict[str, Any]) -> str:
         )
         st.session_state["filter_zone"] = selected_zone
 
-        # Dynamic Ward list based on selected zone
+        # Load target & priority metadata for badges
+        target_info = {}
+        try:
+            import json
+            from utils.data_loader import get_project_root
+            mpath = get_project_root() / "data" / "predictions" / "all_wards_master.json"
+            if mpath.exists():
+                with open(mpath, "r", encoding="utf-8") as f:
+                    for row in json.load(f):
+                        target_info[int(row["ward_id"])] = {
+                            "is_target": row.get("is_target", False),
+                            "tier": row.get("priority_tier", "")
+                        }
+        except Exception:
+            pass
+
+        # Dynamic Ward list based on selected zone & scope
         if df_feat is not None and not df_feat.empty:
+            filtered_wards_df = df_feat.copy()
             if selected_zone != "All Administrative Zones":
-                filtered_wards_df = df_feat[df_feat["zone"] == selected_zone].sort_values(by="ward_id")
-            else:
-                filtered_wards_df = df_feat.sort_values(by="ward_id")
+                filtered_wards_df = filtered_wards_df[filtered_wards_df["zone"] == selected_zone]
+
+            if selected_scope == "🎯 40 Target Wards Only":
+                target_ids = {wid for wid, inf in target_info.items() if inf.get("is_target")}
+                filtered_wards_df = filtered_wards_df[filtered_wards_df["ward_id"].isin(target_ids)]
+            elif selected_scope == "🚨 Critical & High Priority Wards":
+                crit_ids = {wid for wid, inf in target_info.items() if inf.get("is_target") and inf.get("tier") in ["CRITICAL", "HIGH"]}
+                filtered_wards_df = filtered_wards_df[filtered_wards_df["ward_id"].isin(crit_ids)]
+
+            filtered_wards_df = filtered_wards_df.sort_values(by="ward_id")
+
+            def format_ward_label(wid, wname):
+                info = target_info.get(wid, {})
+                if info.get("is_target"):
+                    tier = info.get("tier", "")
+                    if tier == "CRITICAL":
+                        return f"🚨 [CRITICAL TARGET] Ward {wid} - {wname}"
+                    elif tier == "HIGH":
+                        return f"🔥 [HIGH TARGET] Ward {wid} - {wname}"
+                    return f"🎯 [TARGET] Ward {wid} - {wname}"
+                return f"🏛️ [HISTORICAL] Ward {wid} - {wname}"
 
             ward_labels = ["All Municipal Wards"] + [
-                f"Ward {int(r['ward_id'])} - {r['ward_name']}" for _, r in filtered_wards_df.iterrows()
+                format_ward_label(int(r['ward_id']), r['ward_name']) for _, r in filtered_wards_df.iterrows()
             ]
         else:
             ward_labels = ["All Municipal Wards"]

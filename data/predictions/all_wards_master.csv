@@ -1,0 +1,199 @@
+ward_id,ward_name,zone,ward_type,is_target,population,area_sq_km,road_length_kms,streetlights,total_monthly_demand,total_18m_demand,lower_90,upper_90,interval_90_str,confidence_tier,priority_tier,cpi_score,top_category,rank_flip_stability,electrical,solid_waste,roads,animals_health,trees,other
+1,Kempegowda Ward,Yelahanka,Historical Observed (Ground Truth),False,34783,10.9,86.0,2379,98.6,1774.0,98.6,98.6,Observed Ground Truth,Observed Baseline,MEDIUM,0.237,electrical,1.0,40.8,25.6,15.7,7.6,2.8,6.1
+2,Chowdeswari Ward,Yelahanka,Historical Observed (Ground Truth),False,36602,6.5,72.0,2508,36.2,651.0,36.2,36.2,Observed Ground Truth,Observed Baseline,LOW,0.087,electrical,1.0,16.4,5.6,4.1,4.6,2.2,3.3
+3,Atturu,Yelahanka,Historical Observed (Ground Truth),False,58129,8.8,169.0,4227,0.0,0.0,0.0,0.0,Observed Ground Truth,Observed Baseline,LOW,0.0,solid_waste,1.0,0.0,0.0,0.0,0.0,0.0,0.0
+4,Yelahanka Satellite Town,Yelahanka,Historical Observed (Ground Truth),False,41986,4.6,86.0,3626,88.3,1590.0,88.3,88.3,Observed Ground Truth,Observed Baseline,MEDIUM,0.213,electrical,1.0,32.6,19.9,12.3,8.6,8.4,6.5
+5,Jakkuru,Yelahanka,Target Ward (ML Forecast),True,52025,23.5,349.0,4351,306.4,5515.2,189.6,423.3,"[189.6, 423.3]",Low,HIGH,0.681,electrical,0.29,141.0,73.8,40.3,23.0,7.0,21.4
+6,Thanisandra,Yelahanka,Target Ward (ML Forecast),True,71855,10.0,235.0,5022,268.6,4834.8,159.2,378.1,"[159.2, 378.1]",Low,CRITICAL,0.724,electrical,0.16,101.6,73.5,42.7,23.0,7.5,20.2
+7,Byatarayanapura,Yelahanka,Historical Observed (Ground Truth),False,72154,10.0,144.0,2620,165.4,2978.0,165.4,165.4,Observed Ground Truth,Observed Baseline,HIGH,0.398,electrical,1.0,60.5,40.3,19.7,19.2,11.6,14.1
+8,Kodigehalli,Yelahanka,Historical Observed (Ground Truth),False,47546,3.8,84.0,2365,179.7,3235.0,179.7,179.7,Observed Ground Truth,Observed Baseline,HIGH,0.433,solid_waste,1.0,52.1,65.4,34.6,11.8,6.7,9.2
+9,Vidyaranyapura,Yelahanka,Historical Observed (Ground Truth),False,57195,9.9,130.0,2903,214.9,3869.0,214.9,214.9,Observed Ground Truth,Observed Baseline,HIGH,0.517,electrical,1.0,101.0,50.1,14.7,18.9,16.9,13.4
+10,Dodda Bommasandra,Yelahanka,Historical Observed (Ground Truth),False,36396,4.2,51.0,1735,55.3,995.0,55.3,55.3,Observed Ground Truth,Observed Baseline,MEDIUM,0.133,electrical,1.0,29.8,9.5,5.6,3.9,2.4,4.0
+11,Kuvempu Nagar,Yelahanka,Historical Observed (Ground Truth),False,37128,7.1,95.0,2039,145.9,2627.0,145.9,145.9,Observed Ground Truth,Observed Baseline,HIGH,0.351,electrical,1.0,58.4,48.3,18.4,8.4,6.6,5.8
+12,Shettihalli,Dasarahalli,Target Ward (ML Forecast),True,61071,8.1,144.0,3193,116.9,2104.2,44.7,189.1,"[44.7, 189.1]",Low,HIGH,0.591,electrical,0.0,51.9,26.0,15.3,10.2,4.1,9.5
+13,Mallasandra,Dasarahalli,Historical Observed (Ground Truth),False,41482,1.3,40.0,1613,33.8,609.0,33.8,33.8,Observed Ground Truth,Observed Baseline,LOW,0.081,electrical,1.0,18.8,4.5,4.4,2.3,0.9,2.9
+14,Bagalakunte,Dasarahalli,Historical Observed (Ground Truth),False,65113,4.3,123.0,3469,118.3,2129.0,118.3,118.3,Observed Ground Truth,Observed Baseline,HIGH,0.285,electrical,1.0,52.4,27.4,13.5,6.6,8.6,9.7
+15,T Dasarahalli,Dasarahalli,Target Ward (ML Forecast),True,33042,0.9,29.0,1364,35.0,630.0,0.0,74.6,"[0.0, 74.6]",Low,HIGH,0.459,electrical,0.33,11.9,9.7,6.5,2.8,1.0,3.1
+16,Jalahalli,Rajarajeshwari,Historical Observed (Ground Truth),False,37959,5.2,36.0,1899,35.9,647.0,35.9,35.9,Observed Ground Truth,Observed Baseline,LOW,0.086,solid_waste,1.0,7.4,10.1,6.8,6.4,1.5,3.7
+17,J P Park,Rajarajeshwari,Historical Observed (Ground Truth),False,49610,2.0,52.0,1878,44.0,792.0,44.0,44.0,Observed Ground Truth,Observed Baseline,LOW,0.106,electrical,1.0,17.2,8.4,6.7,5.3,3.6,2.7
+18,Radhakrishna Temple Ward,East,Historical Observed (Ground Truth),False,35122,1.9,54.0,2217,81.8,1472.0,81.8,81.8,Observed Ground Truth,Observed Baseline,MEDIUM,0.197,electrical,1.0,34.3,21.2,10.3,5.0,5.6,5.4
+19,Sanjaya Nagar,East,Historical Observed (Ground Truth),False,32491,1.5,44.0,1720,105.8,1905.0,105.8,105.8,Observed Ground Truth,Observed Baseline,MEDIUM,0.255,electrical,1.0,58.6,14.6,10.0,5.4,13.1,4.2
+20,Ganga Nagar,East,Historical Observed (Ground Truth),False,27361,2.3,31.0,1647,46.7,841.0,46.7,46.7,Observed Ground Truth,Observed Baseline,LOW,0.112,electrical,1.0,17.7,9.9,8.3,3.8,3.4,3.7
+21,Hebbala,East,Historical Observed (Ground Truth),False,32516,1.2,36.0,1489,88.7,1596.0,88.7,88.7,Observed Ground Truth,Observed Baseline,MEDIUM,0.214,electrical,1.0,27.3,25.6,19.7,6.6,4.3,5.2
+22,Vishwanath Nagenahalli,East,Historical Observed (Ground Truth),False,51592,1.5,51.0,2886,151.5,2727.0,151.5,151.5,Observed Ground Truth,Observed Baseline,HIGH,0.365,solid_waste,1.0,47.9,71.6,13.6,7.2,5.3,5.9
+23,Nagavara,East,Historical Observed (Ground Truth),False,60483,2.1,65.0,768,70.2,1263.0,70.2,70.2,Observed Ground Truth,Observed Baseline,MEDIUM,0.169,electrical,1.0,31.8,14.5,10.7,4.8,1.0,7.3
+24,HBR Layout,East,Historical Observed (Ground Truth),False,58967,4.6,119.0,1043,185.7,3343.0,185.7,185.7,Observed Ground Truth,Observed Baseline,HIGH,0.447,electrical,1.0,65.5,49.7,33.7,14.2,8.5,14.2
+25,Horamavu,Mahadevapura,Historical Observed (Ground Truth),False,95368,17.5,341.0,4004,415.4,7477.0,415.4,415.4,Observed Ground Truth,Observed Baseline,HIGH,1.0,electrical,1.0,130.8,118.3,67.7,46.4,14.5,37.7
+26,Ramamurthy Nagar,Mahadevapura,Historical Observed (Ground Truth),False,47358,7.3,144.0,3042,240.7,4332.0,240.7,240.7,Observed Ground Truth,Observed Baseline,HIGH,0.579,solid_waste,1.0,74.8,79.8,28.7,25.8,5.8,25.8
+27,Banasavadi,East,Target Ward (ML Forecast),True,51268,3.4,101.0,2727,126.8,2282.4,51.6,202.0,"[51.6, 202.0]",Low,HIGH,0.601,electrical,0.0,47.4,35.5,16.9,10.8,7.1,9.1
+28,Kammanahalli,East,Historical Observed (Ground Truth),False,47074,1.0,43.0,1427,56.2,1011.0,56.2,56.2,Observed Ground Truth,Observed Baseline,MEDIUM,0.135,electrical,1.0,24.1,10.6,10.7,6.6,1.3,2.8
+29,Kacharkanahalli,East,Historical Observed (Ground Truth),False,33588,1.7,55.0,1671,73.2,1318.0,73.2,73.2,Observed Ground Truth,Observed Baseline,MEDIUM,0.176,solid_waste,1.0,21.8,25.6,8.3,6.4,6.7,4.5
+30,Kadugondanahalli,East,Historical Observed (Ground Truth),False,45748,0.7,32.0,1561,62.3,1122.0,62.3,62.3,Observed Ground Truth,Observed Baseline,MEDIUM,0.15,solid_waste,1.0,14.7,33.3,6.3,2.9,1.2,3.9
+31,Kushal Nagar,East,Historical Observed (Ground Truth),False,41936,0.6,28.0,993,31.6,568.0,31.6,31.6,Observed Ground Truth,Observed Baseline,LOW,0.076,electrical,1.0,15.6,10.1,2.4,1.2,0.5,1.7
+32,Kaval Bairasandra,East,Historical Observed (Ground Truth),False,39334,1.6,50.0,1881,218.9,3940.0,218.9,218.9,Observed Ground Truth,Observed Baseline,HIGH,0.527,solid_waste,1.0,85.8,93.2,17.1,8.2,8.5,6.1
+33,Manorayana Palya,East,Target Ward (ML Forecast),True,47926,0.8,33.0,1804,36.0,648.0,0.0,76.1,"[0.0, 76.1]",Low,HIGH,0.508,electrical,0.0,16.9,9.0,4.5,2.8,1.0,1.9
+34,Gangenahalli,East,Historical Observed (Ground Truth),False,24308,1.1,20.0,1889,23.6,425.0,23.6,23.6,Observed Ground Truth,Observed Baseline,LOW,0.057,electrical,1.0,12.2,4.8,1.3,2.1,1.9,1.3
+35,Aramane Nagara,West,Historical Observed (Ground Truth),False,36738,7.5,57.0,2670,57.2,1029.0,57.2,57.2,Observed Ground Truth,Observed Baseline,MEDIUM,0.138,electrical,1.0,19.2,11.0,5.9,6.6,6.5,7.9
+36,Mattikere,West,Historical Observed (Ground Truth),False,37036,0.9,32.0,2484,42.7,769.0,42.7,42.7,Observed Ground Truth,Observed Baseline,LOW,0.103,electrical,1.0,23.3,6.9,4.2,3.3,2.2,2.7
+37,Yeshwanthpura,Rajarajeshwari,Historical Observed (Ground Truth),False,41107,0.8,25.0,990,33.3,599.0,33.3,33.3,Observed Ground Truth,Observed Baseline,LOW,0.08,electrical,1.0,14.7,8.8,3.1,4.1,0.8,1.9
+38,HMT Ward,Rajarajeshwari,Historical Observed (Ground Truth),False,36879,5.2,74.0,1845,46.1,829.0,46.1,46.1,Observed Ground Truth,Observed Baseline,LOW,0.111,electrical,1.0,10.8,10.8,10.6,5.4,3.5,4.8
+39,Chokkasandra,Dasarahalli,Historical Observed (Ground Truth),False,59289,3.8,75.0,2088,64.6,1162.0,64.6,64.6,Observed Ground Truth,Observed Baseline,MEDIUM,0.156,electrical,1.0,28.2,12.8,5.9,5.4,4.1,8.1
+40,Dodda Bidarakallu,Rajarajeshwari,Historical Observed (Ground Truth),False,72794,12.9,282.0,3589,247.5,4455.0,247.5,247.5,Observed Ground Truth,Observed Baseline,HIGH,0.596,electrical,1.0,137.5,33.1,33.4,16.4,4.6,22.4
+41,Peenya Industrial Area,Dasarahalli,Historical Observed (Ground Truth),False,57814,5.5,90.0,2518,67.3,1212.0,67.3,67.3,Observed Ground Truth,Observed Baseline,MEDIUM,0.162,electrical,1.0,22.6,22.2,5.8,3.2,5.8,7.8
+42,Lakshmi Devi Nagar,Rajarajeshwari,Historical Observed (Ground Truth),False,41352,1.5,36.0,2354,16.1,289.0,16.1,16.1,Observed Ground Truth,Observed Baseline,LOW,0.039,electrical,1.0,8.4,0.9,3.1,1.4,0.4,1.8
+43,Nandini Layout,West,Historical Observed (Ground Truth),False,51200,1.4,49.0,2864,56.1,1010.0,56.1,56.1,Observed Ground Truth,Observed Baseline,MEDIUM,0.135,electrical,1.0,21.3,17.3,5.1,4.0,5.2,3.2
+44,Marappana Palya,West,Historical Observed (Ground Truth),False,40212,2.0,52.0,1303,30.7,552.0,30.7,30.7,Observed Ground Truth,Observed Baseline,LOW,0.074,electrical,1.0,13.4,5.2,4.4,2.3,3.0,2.3
+45,Malleshwaram,West,Historical Observed (Ground Truth),False,34196,1.8,34.0,1673,73.6,1324.0,73.6,73.6,Observed Ground Truth,Observed Baseline,MEDIUM,0.177,electrical,1.0,38.8,12.4,5.7,5.9,6.7,4.1
+46,Jayachamarajendra Nagar,East,Historical Observed (Ground Truth),False,31449,0.9,29.0,2280,47.0,846.0,47.0,47.0,Observed Ground Truth,Observed Baseline,MEDIUM,0.113,electrical,1.0,20.2,12.1,4.8,2.7,4.3,2.8
+47,Devara Jeevanahalli,East,Historical Observed (Ground Truth),False,42135,1.4,28.0,1116,17.8,321.0,17.8,17.8,Observed Ground Truth,Observed Baseline,LOW,0.043,electrical,1.0,8.9,3.4,2.9,1.2,0.2,1.2
+48,Muneshwara Nagar,East,Historical Observed (Ground Truth),False,35814,0.5,21.0,666,21.3,383.0,21.3,21.3,Observed Ground Truth,Observed Baseline,LOW,0.051,solid_waste,1.0,5.9,12.2,1.9,0.3,0.1,0.8
+49,Lingarajapura,East,Historical Observed (Ground Truth),False,37955,0.9,36.0,1312,42.2,759.0,42.2,42.2,Observed Ground Truth,Observed Baseline,LOW,0.102,electrical,1.0,18.8,12.2,3.7,4.3,1.1,2.1
+50,Benniganahalli,East,Historical Observed (Ground Truth),False,49094,4.9,64.0,2103,131.6,2369.0,131.6,131.6,Observed Ground Truth,Observed Baseline,HIGH,0.317,solid_waste,1.0,32.6,44.2,18.0,10.3,11.6,14.8
+51,Vijnanapura,Mahadevapura,Historical Observed (Ground Truth),False,46159,2.1,55.0,1847,64.7,1164.0,64.7,64.7,Observed Ground Truth,Observed Baseline,MEDIUM,0.156,electrical,1.0,25.8,15.7,9.8,8.1,0.9,4.4
+52,KR Puram,Mahadevapura,Historical Observed (Ground Truth),False,35168,4.8,83.0,2453,132.3,2382.0,132.3,132.3,Observed Ground Truth,Observed Baseline,HIGH,0.318,solid_waste,1.0,28.3,43.8,24.1,18.1,3.9,14.1
+53,Basavanapura,Mahadevapura,Historical Observed (Ground Truth),False,48585,6.3,126.0,2213,146.3,2634.0,146.3,146.3,Observed Ground Truth,Observed Baseline,HIGH,0.352,solid_waste,1.0,39.2,50.7,24.1,15.1,2.4,14.9
+54,Hudi,Mahadevapura,Historical Observed (Ground Truth),False,50191,15.0,197.0,3478,274.8,4946.0,274.8,274.8,Observed Ground Truth,Observed Baseline,HIGH,0.662,electrical,1.0,95.6,77.3,50.7,25.4,3.7,22.2
+55,Devasandra,Mahadevapura,Historical Observed (Ground Truth),False,33946,3.5,45.0,890,35.4,637.0,35.4,35.4,Observed Ground Truth,Observed Baseline,LOW,0.085,solid_waste,1.0,9.9,11.5,6.2,3.5,0.8,3.5
+56,A Narayanapura,Mahadevapura,Historical Observed (Ground Truth),False,43443,2.1,52.0,2994,59.0,1062.0,59.0,59.0,Observed Ground Truth,Observed Baseline,MEDIUM,0.142,solid_waste,1.0,12.1,19.6,10.6,10.7,0.7,5.3
+57,C.V. Raman Nagar,East,Historical Observed (Ground Truth),False,58815,3.6,67.0,1639,90.2,1624.0,90.2,90.2,Observed Ground Truth,Observed Baseline,MEDIUM,0.217,electrical,1.0,24.9,22.3,15.9,16.5,3.6,7.1
+58,New Tippa Sandra,East,Historical Observed (Ground Truth),False,43983,3.4,68.0,2127,114.6,2063.0,114.6,114.6,Observed Ground Truth,Observed Baseline,HIGH,0.276,solid_waste,1.0,30.1,33.7,15.6,17.1,8.3,9.8
+59,Maruthi Seva Nagar,East,Historical Observed (Ground Truth),False,40362,2.4,45.0,1747,119.7,2155.0,119.7,119.7,Observed Ground Truth,Observed Baseline,HIGH,0.288,roads,1.0,20.9,38.9,45.3,5.3,3.9,5.4
+60,Sagayara Puram,East,Target Ward (ML Forecast),True,35334,0.8,26.0,1017,31.5,567.0,0.0,69.0,"[0.0, 69.0]",Low,MEDIUM,0.404,electrical,0.0,12.9,7.8,4.4,2.6,1.6,2.2
+61,SK Garden,East,Historical Observed (Ground Truth),False,38050,1.3,26.0,803,22.6,407.0,22.6,22.6,Observed Ground Truth,Observed Baseline,LOW,0.054,electrical,1.0,8.5,5.4,4.9,1.8,1.3,0.7
+62,Ramaswamy Palya,East,Historical Observed (Ground Truth),False,34394,0.8,24.0,1418,26.8,483.0,26.8,26.8,Observed Ground Truth,Observed Baseline,LOW,0.065,electrical,1.0,11.6,5.5,2.8,3.4,2.3,1.2
+63,Jaya Mahal,East,Historical Observed (Ground Truth),False,21728,1.4,34.0,2728,26.4,475.0,26.4,26.4,Observed Ground Truth,Observed Baseline,LOW,0.064,electrical,1.0,8.6,4.4,5.4,3.0,1.6,3.4
+64,Raj Mahal Guttahalli,West,Historical Observed (Ground Truth),False,31118,0.7,24.0,1951,36.2,652.0,36.2,36.2,Observed Ground Truth,Observed Baseline,LOW,0.087,electrical,1.0,16.6,9.2,2.9,2.7,3.3,1.5
+65,Kadu Malleshwara Ward,West,Historical Observed (Ground Truth),False,35609,1.4,32.0,1278,0.0,0.0,0.0,0.0,Observed Ground Truth,Observed Baseline,LOW,0.0,solid_waste,1.0,0.0,0.0,0.0,0.0,0.0,0.0
+66,Subramanya Nagar,West,Target Ward (ML Forecast),True,35709,0.9,28.0,1983,32.1,577.8,0.0,70.0,"[0.0, 70.0]",Low,MEDIUM,0.359,electrical,0.0,13.0,7.4,3.9,3.0,2.5,2.4
+67,Nagapura,West,Historical Observed (Ground Truth),False,34574,1.8,47.0,2535,74.7,1345.0,74.7,74.7,Observed Ground Truth,Observed Baseline,MEDIUM,0.18,electrical,1.0,32.2,14.7,7.3,6.7,7.8,6.1
+68,Mahalakshmipuram,West,Historical Observed (Ground Truth),False,44615,0.9,33.0,2380,45.8,825.0,45.8,45.8,Observed Ground Truth,Observed Baseline,LOW,0.11,electrical,1.0,21.2,11.1,3.4,3.8,3.4,3.1
+69,Laggere,Rajarajeshwari,Historical Observed (Ground Truth),False,57077,1.6,55.0,3579,69.3,1248.0,69.3,69.3,Observed Ground Truth,Observed Baseline,MEDIUM,0.167,electrical,1.0,31.9,15.6,10.7,4.2,3.6,3.4
+70,Rajagopal Nagar,Dasarahalli,Historical Observed (Ground Truth),False,61479,2.2,67.0,2210,53.6,965.0,53.6,53.6,Observed Ground Truth,Observed Baseline,MEDIUM,0.129,electrical,1.0,23.9,9.6,9.4,3.8,2.5,4.5
+71,Hegganahalli,Dasarahalli,Historical Observed (Ground Truth),False,66314,1.8,56.0,1895,59.3,1067.0,59.3,59.3,Observed Ground Truth,Observed Baseline,MEDIUM,0.143,electrical,1.0,30.4,13.1,5.8,3.8,2.1,4.1
+72,Herohalli,Rajarajeshwari,Target Ward (ML Forecast),True,62272,7.8,184.0,3561,154.6,2782.8,71.6,237.7,"[71.6, 237.7]",Low,HIGH,0.673,electrical,0.06,59.6,33.0,20.6,14.7,11.7,15.0
+73,Kottegepalya,Rajarajeshwari,Historical Observed (Ground Truth),False,68922,5.8,139.0,5009,202.4,3643.0,202.4,202.4,Observed Ground Truth,Observed Baseline,HIGH,0.487,electrical,1.0,86.2,56.0,19.1,15.6,15.7,9.8
+74,Shakthi Ganapathi Nagar,West,Target Ward (ML Forecast),True,43844,0.7,28.0,1174,24.6,442.8,0.0,57.7,"[0.0, 57.7]",Low,MEDIUM,0.444,electrical,0.38,12.1,5.0,2.4,2.0,1.4,1.6
+75,Shankar Matt,West,Historical Observed (Ground Truth),False,48734,1.1,40.0,2119,45.6,820.0,45.6,45.6,Observed Ground Truth,Observed Baseline,LOW,0.11,electrical,1.0,23.1,8.6,2.9,3.6,3.8,3.6
+76,Gayithri Nagar,West,Historical Observed (Ground Truth),False,33236,0.6,28.0,1457,31.4,566.0,31.4,31.4,Observed Ground Truth,Observed Baseline,LOW,0.076,electrical,1.0,14.3,6.4,3.4,3.7,1.8,1.8
+77,Dattatreya Temple Ward,West,Target Ward (ML Forecast),True,33388,0.7,25.0,1854,29.4,529.2,0.0,65.6,"[0.0, 65.6]",Low,MEDIUM,0.321,electrical,0.0,10.5,7.9,4.5,3.0,1.3,2.3
+78,Pulakeshi Nagar,East,Historical Observed (Ground Truth),False,28835,1.7,41.0,2278,60.5,1089.0,60.5,60.5,Observed Ground Truth,Observed Baseline,MEDIUM,0.146,solid_waste,1.0,16.4,17.6,6.8,6.7,4.2,8.8
+79,Sarvagna Nagar,East,Target Ward (ML Forecast),True,37291,3.6,52.0,1008,55.0,990.0,5.5,104.6,"[5.5, 104.6]",Low,HIGH,0.476,solid_waste,0.0,15.9,15.9,9.8,6.2,2.4,4.9
+80,Hoysala Nagar,East,Historical Observed (Ground Truth),False,35228,2.1,51.0,2955,133.4,2401.0,133.4,133.4,Observed Ground Truth,Observed Baseline,HIGH,0.321,solid_waste,1.0,42.1,42.3,20.3,10.3,11.0,7.4
+81,Vijnana Nagar,Mahadevapura,Historical Observed (Ground Truth),False,57062,5.7,106.0,2261,138.7,2496.0,138.7,138.7,Observed Ground Truth,Observed Baseline,HIGH,0.334,solid_waste,1.0,20.6,54.4,24.8,24.6,2.2,12.1
+82,Garudachar palya,Mahadevapura,Target Ward (ML Forecast),True,49631,6.8,70.0,3663,95.5,1719.0,30.3,160.8,"[30.3, 160.8]",Low,HIGH,0.485,solid_waste,0.01,24.7,28.3,18.0,14.0,1.7,8.8
+83,Kadugodi,Mahadevapura,Historical Observed (Ground Truth),False,43942,11.2,101.0,3377,115.7,2082.0,115.7,115.7,Observed Ground Truth,Observed Baseline,HIGH,0.279,electrical,1.0,29.2,27.4,28.9,14.6,1.6,14.0
+84,Hagadur,Mahadevapura,Historical Observed (Ground Truth),False,50556,12.6,154.0,2845,169.2,3045.0,169.2,169.2,Observed Ground Truth,Observed Baseline,HIGH,0.407,roads,1.0,27.8,44.0,49.1,21.8,2.7,23.8
+85,Dodda Nekkundi,Mahadevapura,Target Ward (ML Forecast),True,63083,12.0,155.0,3997,195.1,3511.8,101.9,288.4,"[101.9, 288.4]",Low,HIGH,0.597,solid_waste,0.0,49.1,55.7,33.1,29.8,7.3,20.2
+86,Marathahalli,Mahadevapura,Historical Observed (Ground Truth),False,39768,3.1,53.0,1461,64.2,1156.0,64.2,64.2,Observed Ground Truth,Observed Baseline,MEDIUM,0.155,electrical,1.0,18.4,16.3,14.6,9.1,0.7,5.1
+87,HAL Airport,Mahadevapura,Historical Observed (Ground Truth),False,39926,6.8,41.0,2455,40.8,734.0,40.8,40.8,Observed Ground Truth,Observed Baseline,LOW,0.098,solid_waste,1.0,7.3,13.7,8.5,7.8,0.6,2.9
+88,Jeevanbhima Nagar,East,Target Ward (ML Forecast),True,38251,1.9,47.0,1618,56.4,1015.2,6.3,106.6,"[6.3, 106.6]",Low,HIGH,0.451,solid_waste,0.33,16.4,17.2,8.9,7.1,2.5,4.3
+89,Jogupalya,East,Target Ward (ML Forecast),True,33793,0.9,30.0,2501,39.3,707.4,0.0,81.2,"[0.0, 81.2]",Low,MEDIUM,0.388,electrical,0.0,13.0,11.4,6.1,4.2,2.0,2.6
+90,Halsoor,East,Historical Observed (Ground Truth),False,35090,1.7,34.0,2576,40.8,735.0,40.8,40.8,Observed Ground Truth,Observed Baseline,LOW,0.098,electrical,1.0,13.4,7.8,8.2,4.7,3.1,3.6
+91,Bharathi Nagar,East,Historical Observed (Ground Truth),False,32689,0.8,30.0,1659,39.4,710.0,39.4,39.4,Observed Ground Truth,Observed Baseline,LOW,0.095,solid_waste,1.0,10.7,14.1,9.6,2.5,0.8,1.8
+92,Shivaji Nagar,East,Historical Observed (Ground Truth),False,37506,0.4,22.0,1631,31.0,558.0,31.0,31.0,Observed Ground Truth,Observed Baseline,LOW,0.075,electrical,1.0,14.8,5.8,4.7,3.2,0.8,1.8
+93,Vasanth Nagar,East,Historical Observed (Ground Truth),False,22815,3.1,47.0,1595,46.3,834.0,46.3,46.3,Observed Ground Truth,Observed Baseline,LOW,0.111,electrical,1.0,13.9,7.3,8.2,7.0,4.3,5.6
+94,Gandhi Nagar,West,Historical Observed (Ground Truth),False,31208,1.9,38.0,1909,66.7,1200.0,66.7,66.7,Observed Ground Truth,Observed Baseline,MEDIUM,0.161,electrical,1.0,18.8,15.5,14.3,6.7,3.4,8.0
+95,Subhash Nagar,West,Historical Observed (Ground Truth),False,37693,1.3,27.0,1191,10.2,184.0,10.2,10.2,Observed Ground Truth,Observed Baseline,LOW,0.025,electrical,1.0,2.8,1.1,2.5,1.7,0.9,1.3
+96,Okalipuram,West,Historical Observed (Ground Truth),False,38110,0.8,21.0,1433,15.5,279.0,15.5,15.5,Observed Ground Truth,Observed Baseline,LOW,0.037,electrical,1.0,3.9,2.7,2.6,2.8,1.3,2.2
+97,Dayananda Nagar,West,Historical Observed (Ground Truth),False,35721,0.4,20.0,1162,17.1,308.0,17.1,17.1,Observed Ground Truth,Observed Baseline,LOW,0.041,electrical,1.0,7.6,3.2,2.8,1.7,0.6,1.3
+98,Prakash Nagar,West,Historical Observed (Ground Truth),False,32913,0.6,20.0,904,19.9,359.0,19.9,19.9,Observed Ground Truth,Observed Baseline,LOW,0.048,electrical,1.0,8.1,2.7,2.8,2.7,1.4,2.2
+99,Rajaji Nagar,West,Historical Observed (Ground Truth),False,33084,0.9,27.0,1367,43.3,780.0,43.3,43.3,Observed Ground Truth,Observed Baseline,LOW,0.104,electrical,1.0,19.2,7.8,5.8,3.3,3.9,3.3
+100,Basaveshwara Nagar,West,Target Ward (ML Forecast),True,30333,0.8,26.0,1155,25.5,459.0,0.0,59.3,"[0.0, 59.3]",Low,MEDIUM,0.338,electrical,0.0,10.4,5.4,3.2,2.4,2.2,1.9
+101,Kamakshipalya,West,Historical Observed (Ground Truth),False,30051,0.9,28.0,1561,35.1,632.0,35.1,35.1,Observed Ground Truth,Observed Baseline,LOW,0.084,electrical,1.0,14.4,3.1,2.3,2.2,10.4,2.6
+102,Vrisahbhavathi Nagar,West,Historical Observed (Ground Truth),False,50893,1.0,40.0,1163,17.9,322.0,17.9,17.9,Observed Ground Truth,Observed Baseline,LOW,0.043,electrical,1.0,8.5,3.0,2.1,2.2,0.7,1.4
+103,Kaveripura,South,Historical Observed (Ground Truth),False,53532,1.7,48.0,1971,31.1,559.0,31.1,31.1,Observed Ground Truth,Observed Baseline,LOW,0.075,solid_waste,1.0,7.4,13.6,2.1,3.8,2.3,1.8
+104,Govindaraja Nagar,South,Historical Observed (Ground Truth),False,26873,0.8,26.0,1067,35.2,634.0,35.2,35.2,Observed Ground Truth,Observed Baseline,LOW,0.085,solid_waste,1.0,6.8,7.7,3.6,5.9,6.9,4.3
+105,Agrahara Dasarahalli,South,Historical Observed (Ground Truth),False,28355,0.8,28.0,1381,22.6,407.0,22.6,22.6,Observed Ground Truth,Observed Baseline,LOW,0.054,solid_waste,1.0,3.0,6.7,3.8,3.2,3.8,2.1
+106,Dr.Raj Kumar Ward,South,Historical Observed (Ground Truth),False,24181,1.0,30.0,1475,38.2,688.0,38.2,38.2,Observed Ground Truth,Observed Baseline,LOW,0.092,solid_waste,1.0,3.3,20.9,3.8,2.4,4.1,3.7
+107,Shiva Nagar,West,Historical Observed (Ground Truth),False,36461,0.8,28.0,1035,38.2,688.0,38.2,38.2,Observed Ground Truth,Observed Baseline,LOW,0.092,electrical,1.0,18.1,5.5,5.2,3.7,3.6,2.1
+108,Sri Rama Mandir Ward,West,Historical Observed (Ground Truth),False,33866,1.1,33.0,2032,57.3,1032.0,57.3,57.3,Observed Ground Truth,Observed Baseline,MEDIUM,0.138,electrical,1.0,15.5,11.6,12.6,4.3,6.2,7.1
+109,Chickpete,West,Historical Observed (Ground Truth),False,33292,0.7,38.0,1030,125.6,2261.0,125.6,125.6,Observed Ground Truth,Observed Baseline,HIGH,0.302,solid_waste,1.0,26.7,51.3,23.0,9.6,3.9,11.1
+110,Sampangiram Nagar,East,Historical Observed (Ground Truth),False,27504,4.4,58.0,2018,81.6,1468.0,81.6,81.6,Observed Ground Truth,Observed Baseline,MEDIUM,0.196,electrical,1.0,23.7,17.2,16.3,8.8,4.4,11.2
+111,Shantala Nagar,East,Target Ward (ML Forecast),True,22995,4.0,61.0,1547,76.2,1371.6,17.9,134.4,"[17.9, 134.4]",Low,MEDIUM,0.392,electrical,0.0,23.4,18.5,11.5,7.4,7.7,7.7
+112,Domlur,East,Historical Observed (Ground Truth),False,30638,1.7,51.0,1971,57.3,1032.0,57.3,57.3,Observed Ground Truth,Observed Baseline,MEDIUM,0.138,electrical,1.0,16.7,9.4,9.7,10.0,6.1,5.4
+113,Konena Agrahara,East,Historical Observed (Ground Truth),False,38108,2.1,47.0,2373,70.3,1265.0,70.3,70.3,Observed Ground Truth,Observed Baseline,MEDIUM,0.169,solid_waste,1.0,18.6,23.6,7.3,13.6,2.8,4.4
+114,Agaram,East,Historical Observed (Ground Truth),False,36916,11.0,35.0,1109,30.3,546.0,30.3,30.3,Observed Ground Truth,Observed Baseline,LOW,0.073,electrical,1.0,13.7,5.1,3.2,3.9,1.4,2.9
+115,Vannar Pet,East,Target Ward (ML Forecast),True,37060,0.8,30.0,962,39.3,707.4,0.0,81.1,"[0.0, 81.1]",Low,HIGH,0.532,electrical,0.0,16.1,9.1,4.3,3.3,3.8,2.6
+116,Nilasandra,East,Historical Observed (Ground Truth),False,48534,0.5,30.0,987,19.8,357.0,19.8,19.8,Observed Ground Truth,Observed Baseline,LOW,0.048,electrical,1.0,8.9,3.1,3.6,3.0,0.1,1.1
+117,Shanthi Nagar,East,Target Ward (ML Forecast),True,42095,2.7,43.0,1137,50.3,905.4,3.0,97.7,"[3.0, 97.7]",Low,HIGH,0.469,electrical,0.0,16.2,13.8,7.9,5.6,2.6,4.2
+118,Sudham Nagar,South,Target Ward (ML Forecast),True,28784,1.0,30.0,1435,38.0,684.0,0.0,79.2,"[0.0, 79.2]",Low,MEDIUM,0.345,solid_waste,0.0,10.2,12.1,6.7,4.0,1.7,3.4
+119,Dharmaraya Swamy Temple,South,Historical Observed (Ground Truth),False,27076,1.1,41.0,1731,80.1,1442.0,80.1,80.1,Observed Ground Truth,Observed Baseline,MEDIUM,0.193,solid_waste,1.0,19.7,34.7,14.5,5.1,0.6,5.6
+120,Cottonpete,West,Historical Observed (Ground Truth),False,37344,0.8,26.0,972,24.4,440.0,24.4,24.4,Observed Ground Truth,Observed Baseline,LOW,0.059,solid_waste,1.0,6.3,7.0,6.3,2.8,0.2,1.9
+121,Binni Pete,West,Historical Observed (Ground Truth),False,37354,0.8,27.0,698,22.3,401.0,22.3,22.3,Observed Ground Truth,Observed Baseline,LOW,0.054,solid_waste,1.0,6.9,7.0,2.1,2.6,1.8,1.9
+122,Kempapura Agrahara,South,Target Ward (ML Forecast),True,40032,0.4,16.0,637,11.2,201.6,0.0,33.6,"[0.0, 33.6]",Low,MEDIUM,0.435,electrical,0.29,5.5,2.6,1.1,1.1,0.2,0.7
+123,Vijaya Nagar,South,Historical Observed (Ground Truth),False,40331,0.7,27.0,1636,62.9,1132.0,62.9,62.9,Observed Ground Truth,Observed Baseline,MEDIUM,0.151,electrical,1.0,40.9,3.7,4.1,6.0,3.6,4.6
+124,Hosahalli,South,Historical Observed (Ground Truth),False,37347,0.9,33.0,1328,52.4,943.0,52.4,52.4,Observed Ground Truth,Observed Baseline,MEDIUM,0.126,electrical,1.0,26.0,11.2,4.6,3.9,3.8,2.8
+125,Marenahalli,South,Historical Observed (Ground Truth),False,21171,0.7,23.0,660,30.9,556.0,30.9,30.9,Observed Ground Truth,Observed Baseline,LOW,0.074,solid_waste,1.0,3.8,10.7,4.2,4.3,4.3,3.6
+126,Maruthi Mandir Ward,South,Target Ward (ML Forecast),True,29319,0.8,26.0,1850,32.0,576.0,0.0,69.8,"[0.0, 69.8]",Low,MEDIUM,0.379,electrical,0.0,10.4,8.6,4.2,3.2,3.0,2.6
+127,Mudalapalya,South,Historical Observed (Ground Truth),False,43729,1.0,37.0,1989,22.4,404.0,22.4,22.4,Observed Ground Truth,Observed Baseline,LOW,0.054,solid_waste,1.0,4.5,5.3,4.8,3.0,2.4,2.4
+128,Nagarabhavi,South,Target Ward (ML Forecast),True,35780,1.6,45.0,2613,61.1,1099.8,8.9,113.3,"[8.9, 113.3]",Low,HIGH,0.479,electrical,0.0,22.7,14.3,7.4,5.1,6.9,4.7
+129,Jnana Bharathi Ward,Rajarajeshwari,Target Ward (ML Forecast),True,68132,11.9,233.0,5476,258.8,4658.4,151.4,366.2,"[151.4, 366.2]",Low,HIGH,0.65,electrical,0.0,94.4,58.2,34.1,24.2,21.8,26.0
+130,Ullalu,Rajarajeshwari,Target Ward (ML Forecast),True,58199,8.7,235.0,4874,219.4,3949.2,120.5,318.2,"[120.5, 318.2]",Low,HIGH,0.678,electrical,0.19,88.3,48.1,27.9,18.4,17.6,19.1
+131,Nayandahalli,South,Historical Observed (Ground Truth),False,42785,2.1,40.0,1573,20.2,363.0,20.2,20.2,Observed Ground Truth,Observed Baseline,LOW,0.049,solid_waste,1.0,3.3,7.8,2.5,2.1,2.1,2.4
+132,Attiguppe,South,Target Ward (ML Forecast),True,41487,1.4,46.0,2327,68.4,1231.2,13.1,123.6,"[13.1, 123.6]",Low,HIGH,0.536,electrical,0.0,23.4,15.9,6.5,5.5,12.0,5.2
+133,Hampi Nagar,South,Historical Observed (Ground Truth),False,35113,1.1,38.0,1581,87.3,1572.0,87.3,87.3,Observed Ground Truth,Observed Baseline,MEDIUM,0.21,electrical,1.0,46.3,14.6,7.7,6.8,8.3,3.6
+134,Bapuji Nagar,South,Historical Observed (Ground Truth),False,49484,0.7,23.0,997,41.7,750.0,41.7,41.7,Observed Ground Truth,Observed Baseline,LOW,0.1,electrical,1.0,17.6,12.9,3.7,3.8,1.4,2.2
+135,Padarayanapura,West,Historical Observed (Ground Truth),False,37599,0.3,13.0,865,11.4,206.0,11.4,11.4,Observed Ground Truth,Observed Baseline,LOW,0.027,electrical,1.0,6.1,1.3,1.6,1.2,0.3,1.1
+136,Jagajivanaram Nagar,West,Historical Observed (Ground Truth),False,38639,0.6,20.0,950,33.8,609.0,33.8,33.8,Observed Ground Truth,Observed Baseline,LOW,0.081,solid_waste,1.0,7.0,22.7,1.4,1.6,0.5,0.6
+137,Rayapuram,West,Historical Observed (Ground Truth),False,36039,0.4,16.0,952,17.3,312.0,17.3,17.3,Observed Ground Truth,Observed Baseline,LOW,0.042,electrical,1.0,8.0,4.8,2.0,1.4,0.3,0.9
+138,Chelavadi Palya,West,Target Ward (ML Forecast),True,24801,0.4,14.0,656,22.9,412.2,0.0,55.0,"[0.0, 55.0]",Low,MEDIUM,0.364,electrical,0.0,7.5,6.6,4.3,1.9,0.6,2.0
+139,KR Market,West,Target Ward (ML Forecast),True,29344,0.8,26.0,1098,32.1,577.8,0.0,70.0,"[0.0, 70.0]",Low,MEDIUM,0.369,electrical,0.0,9.6,9.5,5.8,3.2,1.2,2.9
+140,Chamraja Pet,West,Historical Observed (Ground Truth),False,32213,1.0,34.0,2137,52.2,940.0,52.2,52.2,Observed Ground Truth,Observed Baseline,MEDIUM,0.126,electrical,1.0,20.5,11.0,8.1,4.0,3.6,5.1
+141,Azad Nagar,West,Target Ward (ML Forecast),True,38825,0.7,26.0,1284,28.3,509.4,0.0,63.9,"[0.0, 63.9]",Low,MEDIUM,0.395,electrical,0.0,10.9,7.8,3.5,2.6,1.5,2.0
+142,Sunkenahalli,South,Historical Observed (Ground Truth),False,34666,1.5,50.0,1621,89.3,1608.0,89.3,89.3,Observed Ground Truth,Observed Baseline,MEDIUM,0.215,electrical,1.0,32.1,19.7,19.0,5.0,5.7,7.8
+143,Vishveshwara Puram,South,Historical Observed (Ground Truth),False,32462,2.5,52.0,1563,88.6,1595.0,88.6,88.6,Observed Ground Truth,Observed Baseline,MEDIUM,0.213,electrical,1.0,32.3,30.8,6.9,6.4,5.1,7.1
+144,Siddapura,South,Historical Observed (Ground Truth),False,34879,0.7,15.0,1225,40.3,726.0,40.3,40.3,Observed Ground Truth,Observed Baseline,LOW,0.097,solid_waste,1.0,10.0,17.1,6.6,3.1,0.6,3.0
+145,Hombegowda Nagar,South,Historical Observed (Ground Truth),False,38309,1.4,36.0,1820,83.6,1505.0,83.6,83.6,Observed Ground Truth,Observed Baseline,MEDIUM,0.201,solid_waste,1.0,26.1,29.3,8.4,6.7,3.8,9.3
+146,Lakkasandra,South,Target Ward (ML Forecast),True,30667,1.3,29.0,1150,42.9,772.2,0.0,86.6,"[0.0, 86.6]",Low,MEDIUM,0.429,solid_waste,0.0,12.3,13.1,6.3,4.5,3.1,3.6
+147,Adugodi,South,Historical Observed (Ground Truth),False,34299,1.6,31.0,1645,30.9,556.0,30.9,30.9,Observed Ground Truth,Observed Baseline,LOW,0.074,electrical,1.0,10.9,6.6,3.8,5.4,3.1,1.1
+148,Ejipura,South,Historical Observed (Ground Truth),False,47004,1.9,48.0,1555,60.3,1086.0,60.3,60.3,Observed Ground Truth,Observed Baseline,MEDIUM,0.145,solid_waste,1.0,16.4,18.6,7.3,10.5,3.4,4.1
+149,Varthur,Mahadevapura,Target Ward (ML Forecast),True,54625,28.3,202.0,2952,189.2,3405.6,97.4,281.0,"[97.4, 281.0]",Low,HIGH,0.576,solid_waste,0.0,44.5,51.0,46.1,26.3,1.1,20.2
+150,Bellanduru,Mahadevapura,Historical Observed (Ground Truth),False,80180,26.4,249.0,4984,329.8,5936.0,329.8,329.8,Observed Ground Truth,Observed Baseline,HIGH,0.794,solid_waste,1.0,48.5,98.6,78.3,63.4,7.7,33.3
+151,Koramangala,South,Historical Observed (Ground Truth),False,38316,3.7,71.0,2447,107.6,1936.0,107.6,107.6,Observed Ground Truth,Observed Baseline,HIGH,0.259,electrical,1.0,32.8,13.7,17.2,19.8,14.2,9.9
+152,Suddagunte Palya,South,Target Ward (ML Forecast),True,39997,1.7,38.0,1645,49.2,885.6,2.3,96.0,"[2.3, 96.0]",Low,MEDIUM,0.421,electrical,0.0,15.3,14.7,7.4,5.7,2.3,3.8
+153,Jaya Nagar,South,Historical Observed (Ground Truth),False,38151,2.5,47.0,1940,123.3,2220.0,123.3,123.3,Observed Ground Truth,Observed Baseline,HIGH,0.297,solid_waste,1.0,32.3,61.9,8.7,6.1,7.2,7.2
+154,Basavanagudi,South,Historical Observed (Ground Truth),False,32640,1.2,38.0,2099,83.1,1496.0,83.1,83.1,Observed Ground Truth,Observed Baseline,MEDIUM,0.2,electrical,1.0,31.6,20.7,13.1,5.1,8.8,3.9
+155,Hanumanth Nagar,South,Historical Observed (Ground Truth),False,36982,1.0,30.0,1571,45.7,822.0,45.7,45.7,Observed Ground Truth,Observed Baseline,LOW,0.11,electrical,1.0,18.1,12.4,3.8,2.9,5.1,3.2
+156,Sri Nagar,South,Historical Observed (Ground Truth),False,41379,0.8,29.0,1302,61.2,1101.0,61.2,61.2,Observed Ground Truth,Observed Baseline,MEDIUM,0.147,electrical,1.0,27.7,17.8,4.1,4.4,4.9,2.3
+157,Gali Anjenaya Temple Ward,South,Historical Observed (Ground Truth),False,34653,1.1,34.0,1225,38.2,688.0,38.2,38.2,Observed Ground Truth,Observed Baseline,LOW,0.092,electrical,1.0,16.9,8.4,5.6,3.2,1.4,2.7
+158,Deepanjali Nagar,South,Historical Observed (Ground Truth),False,45928,2.1,50.0,1819,40.9,737.0,40.9,40.9,Observed Ground Truth,Observed Baseline,LOW,0.098,electrical,1.0,16.3,7.9,7.2,4.7,2.6,2.3
+159,Kengeri,Rajarajeshwari,Historical Observed (Ground Truth),False,40771,5.1,99.0,4712,137.4,2473.0,137.4,137.4,Observed Ground Truth,Observed Baseline,HIGH,0.331,electrical,1.0,71.2,20.8,14.2,11.8,5.5,13.9
+160,Raja Rajeshawari Nagar,Rajarajeshwari,Historical Observed (Ground Truth),False,56897,11.1,223.0,5870,350.7,6313.0,350.7,350.7,Observed Ground Truth,Observed Baseline,HIGH,0.844,electrical,1.0,141.6,91.3,40.9,27.2,25.0,24.7
+161,Hosakerehalli,South,Historical Observed (Ground Truth),False,46805,1.3,46.0,1906,52.8,951.0,52.8,52.8,Observed Ground Truth,Observed Baseline,MEDIUM,0.127,electrical,1.0,25.4,6.9,8.9,3.8,4.5,3.3
+162,Giri Nagar,South,Historical Observed (Ground Truth),False,43195,1.8,55.0,2138,143.6,2584.0,143.6,143.6,Observed Ground Truth,Observed Baseline,HIGH,0.346,solid_waste,1.0,40.9,69.6,9.4,6.5,12.3,4.9
+163,Katriguppe,South,Historical Observed (Ground Truth),False,45572,1.1,38.0,1421,75.2,1354.0,75.2,75.2,Observed Ground Truth,Observed Baseline,MEDIUM,0.181,solid_waste,1.0,23.0,29.7,7.2,4.3,6.1,4.9
+164,Vidya Peeta Ward,South,Target Ward (ML Forecast),True,43483,1.2,42.0,1758,60.6,1090.8,8.6,112.5,"[8.6, 112.5]",Low,HIGH,0.535,electrical,0.0,22.2,17.2,6.4,4.7,6.0,4.0
+165,Ganesh Mandir Ward,South,Historical Observed (Ground Truth),False,25998,1.6,45.0,1660,72.7,1309.0,72.7,72.7,Observed Ground Truth,Observed Baseline,MEDIUM,0.175,solid_waste,1.0,21.0,24.3,8.2,6.0,8.2,4.9
+166,Kari Sandra,South,Historical Observed (Ground Truth),False,27040,1.1,31.0,1910,32.3,581.0,32.3,32.3,Observed Ground Truth,Observed Baseline,LOW,0.078,electrical,1.0,8.9,7.4,5.1,2.6,4.7,3.6
+167,Yediyur,South,Historical Observed (Ground Truth),False,32756,1.2,41.0,1650,37.0,666.0,37.0,37.0,Observed Ground Truth,Observed Baseline,LOW,0.089,electrical,1.0,12.7,8.1,5.9,3.6,3.7,3.1
+168,Pattabhi Ram Nagar,South,Historical Observed (Ground Truth),False,28353,1.7,43.0,1970,105.7,1902.0,105.7,105.7,Observed Ground Truth,Observed Baseline,MEDIUM,0.254,solid_waste,1.0,23.2,38.4,12.8,9.4,14.4,7.4
+169,Byra Sandra,South,Target Ward (ML Forecast),True,32066,0.9,26.0,2100,34.8,626.4,0.0,74.2,"[0.0, 74.2]",Low,MEDIUM,0.349,electrical,0.0,11.2,11.1,4.7,3.5,1.9,2.4
+170,Jaya Nagar East,South,Historical Observed (Ground Truth),False,33927,1.0,29.0,1390,63.3,1140.0,63.3,63.3,Observed Ground Truth,Observed Baseline,MEDIUM,0.152,electrical,1.0,23.3,18.3,6.2,4.3,7.6,3.7
+171,Gurappana Palya,South,Historical Observed (Ground Truth),False,48991,0.7,24.0,1440,38.2,688.0,38.2,38.2,Observed Ground Truth,Observed Baseline,LOW,0.092,solid_waste,1.0,12.6,13.8,5.6,3.8,1.2,1.3
+172,Madivala,South,Historical Observed (Ground Truth),False,42624,1.2,41.0,1418,67.4,1213.0,67.4,67.4,Observed Ground Truth,Observed Baseline,MEDIUM,0.162,electrical,1.0,28.8,13.4,9.2,8.1,3.2,4.7
+173,Jakka Sandra,South,Historical Observed (Ground Truth),False,33521,1.5,34.0,1386,40.4,727.0,40.4,40.4,Observed Ground Truth,Observed Baseline,LOW,0.097,solid_waste,1.0,11.4,14.4,4.7,4.8,2.2,2.9
+174,HSR Layout,Bommanahalli,Target Ward (ML Forecast),True,63033,7.1,141.0,4737,197.6,3556.8,103.8,291.5,"[103.8, 291.5]",Low,HIGH,0.65,electrical,0.0,70.1,42.9,29.6,24.4,13.5,17.1
+175,Bommanahalli,Bommanahalli,Historical Observed (Ground Truth),False,43585,1.8,49.0,2243,87.4,1574.0,87.4,87.4,Observed Ground Truth,Observed Baseline,MEDIUM,0.21,electrical,1.0,36.9,16.0,15.1,11.7,2.6,5.2
+176,BTM Layout,South,Target Ward (ML Forecast),True,52250,2.1,64.0,2450,95.2,1713.6,30.0,160.3,"[30.0, 160.3]",Low,HIGH,0.597,electrical,0.0,32.4,25.4,12.9,9.6,7.7,7.2
+177,JP Nagar,South,Historical Observed (Ground Truth),False,28846,1.8,48.0,1660,142.6,2566.0,142.6,142.6,Observed Ground Truth,Observed Baseline,HIGH,0.343,electrical,1.0,48.6,29.1,21.7,8.5,17.2,17.6
+178,Sarakki,South,Historical Observed (Ground Truth),False,31034,1.3,39.0,1910,99.4,1789.0,99.4,99.4,Observed Ground Truth,Observed Baseline,MEDIUM,0.239,electrical,1.0,31.6,27.5,12.4,6.0,9.1,12.7
+179,Shakambari Narar,South,Historical Observed (Ground Truth),False,25871,1.9,41.0,1625,83.7,1506.0,83.7,83.7,Observed Ground Truth,Observed Baseline,MEDIUM,0.201,solid_waste,1.0,18.0,31.4,11.9,5.6,11.6,5.1
+180,Banashankari Temple Ward,South,Historical Observed (Ground Truth),False,42171,0.7,28.0,1522,52.3,942.0,52.3,52.3,Observed Ground Truth,Observed Baseline,MEDIUM,0.126,solid_waste,1.0,8.9,31.6,4.2,2.5,2.1,2.9
+181,Kumara Swamy Layout,South,Historical Observed (Ground Truth),False,47182,1.8,60.0,1915,145.5,2619.0,145.5,145.5,Observed Ground Truth,Observed Baseline,HIGH,0.35,solid_waste,1.0,28.3,83.7,9.1,6.4,8.5,9.6
+182,Padmanabha Nagar,South,Target Ward (ML Forecast),True,41037,1.7,53.0,1805,77.2,1389.6,18.5,135.9,"[18.5, 135.9]",Low,HIGH,0.599,electrical,0.0,25.7,21.9,9.1,5.9,9.1,5.4
+183,Chikkala Sandra,South,Historical Observed (Ground Truth),False,43364,1.1,39.0,2050,51.8,932.0,51.8,51.8,Observed Ground Truth,Observed Baseline,MEDIUM,0.125,electrical,1.0,16.6,13.2,8.6,5.8,3.8,3.9
+184,Uttarahalli,Bommanahalli,Target Ward (ML Forecast),True,57209,9.9,215.0,5158,263.7,4746.6,155.3,372.1,"[155.3, 372.1]",Low,HIGH,0.668,electrical,0.08,97.9,74.4,30.9,20.0,20.6,20.0
+185,Yelchenahalli,Bommanahalli,Historical Observed (Ground Truth),False,46943,1.6,51.0,3260,138.9,2501.0,138.9,138.9,Observed Ground Truth,Observed Baseline,HIGH,0.334,solid_waste,1.0,36.3,74.1,12.5,6.9,4.0,5.2
+186,Jaraganahalli,Bommanahalli,Historical Observed (Ground Truth),False,38294,1.3,37.0,1422,39.1,704.0,39.1,39.1,Observed Ground Truth,Observed Baseline,LOW,0.094,electrical,1.0,13.3,11.7,5.1,4.1,1.4,3.4
+187,Puttenahalli,Bommanahalli,Historical Observed (Ground Truth),False,49207,2.9,65.0,1587,72.2,1300.0,72.2,72.2,Observed Ground Truth,Observed Baseline,MEDIUM,0.174,solid_waste,1.0,18.2,19.4,13.2,11.6,3.9,5.9
+188,Bilekhalli,Bommanahalli,Historical Observed (Ground Truth),False,49884,4.3,72.0,3290,120.7,2172.0,120.7,120.7,Observed Ground Truth,Observed Baseline,HIGH,0.291,electrical,1.0,40.2,26.3,22.9,14.9,7.2,9.2
+189,Honga Sandra,Bommanahalli,Historical Observed (Ground Truth),False,68554,2.1,61.0,1729,66.6,1198.0,66.6,66.6,Observed Ground Truth,Observed Baseline,MEDIUM,0.16,electrical,1.0,24.7,12.9,14.4,9.8,0.7,4.1
+190,Mangammana Palya,Bommanahalli,Historical Observed (Ground Truth),False,65890,3.5,83.0,1487,99.4,1790.0,99.4,99.4,Observed Ground Truth,Observed Baseline,MEDIUM,0.239,electrical,1.0,32.3,18.6,23.2,11.2,2.1,12.2
+191,Singa Sandra,Bommanahalli,Historical Observed (Ground Truth),False,71004,9.7,179.0,3075,198.1,3566.0,198.1,198.1,Observed Ground Truth,Observed Baseline,HIGH,0.477,electrical,1.0,86.2,34.1,32.9,20.1,5.8,19.1
+192,Begur,Bommanahalli,Historical Observed (Ground Truth),False,80037,19.0,280.0,3427,338.5,6093.0,338.5,338.5,Observed Ground Truth,Observed Baseline,HIGH,0.815,electrical,1.0,142.3,50.3,63.5,32.8,15.1,34.4
+193,Arakere,Bommanahalli,Target Ward (ML Forecast),True,58355,6.6,155.0,4163,199.4,3589.2,105.1,293.7,"[105.1, 293.7]",Low,HIGH,0.653,electrical,0.0,74.4,52.9,29.4,18.5,9.2,15.0
+194,Gottigere,Bommanahalli,Historical Observed (Ground Truth),False,51911,7.4,176.0,3978,258.8,4659.0,258.8,258.8,Observed Ground Truth,Observed Baseline,HIGH,0.623,solid_waste,1.0,76.3,118.7,22.2,16.8,9.8,15.1
+195,Konankunte,Bommanahalli,Historical Observed (Ground Truth),False,57335,3.4,94.0,3857,148.8,2678.0,148.8,148.8,Observed Ground Truth,Observed Baseline,HIGH,0.358,electrical,1.0,46.1,43.3,25.6,13.9,11.1,8.8
+196,Anjanapura,Bommanahalli,Historical Observed (Ground Truth),False,45608,11.4,234.0,3771,117.2,2109.0,117.2,117.2,Observed Ground Truth,Observed Baseline,HIGH,0.282,electrical,1.0,42.8,30.5,13.4,14.3,7.6,8.5
+197,Vasanthpura,Bommanahalli,Historical Observed (Ground Truth),False,62057,5.7,143.0,4605,195.3,3515.0,195.3,195.3,Observed Ground Truth,Observed Baseline,HIGH,0.47,electrical,1.0,77.2,47.6,29.7,15.9,11.3,13.4
+198,Hemmigepura,Rajarajeshwari,Historical Observed (Ground Truth),False,50440,30.5,453.0,6802,353.1,6355.0,353.1,353.1,Observed Ground Truth,Observed Baseline,HIGH,0.85,electrical,1.0,174.3,71.3,34.9,26.4,13.9,32.2

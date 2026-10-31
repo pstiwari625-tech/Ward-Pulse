@@ -22,6 +22,7 @@ from components.dashboard import (
     render_analytics_view,
     render_map_view,
     render_governance_view,
+    render_swagger_api_view,
     render_about_view
 )
 
@@ -70,6 +71,8 @@ def main():
         render_map_view(df_summary, geojson_data)
     elif active_view == "Model Governance":
         render_governance_view()
+    elif active_view == "Swagger API":
+        render_swagger_api_view()
     elif active_view == "About Project":
         render_about_view()
     else:
