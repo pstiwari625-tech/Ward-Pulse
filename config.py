@@ -51,6 +51,16 @@ CATEGORIES = [
     "trees",
 ]
 
+# Empirical Window Category Shares (2024-01 to 2025-06 Window Ground Truth, %)
+WINDOW_CATEGORY_SHARES = {
+    "electrical": 34.86,
+    "solid_waste": 27.99,
+    "roads": 14.34,
+    "animals_health": 9.37,
+    "other": 7.84,
+    "trees": 5.60,
+}
+
 # Physical Asset Exposure Map (Strictly using validated columns)
 CATEGORY_EXPOSURE_MAP = {
     "electrical": "streetlights",
