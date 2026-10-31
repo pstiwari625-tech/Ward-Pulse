@@ -589,3 +589,34 @@
     margin-top: 0.2rem;
 }
 
+/* Native Streamlit Metric Card Polish */
+[data-testid="stMetric"] {
+    background-color: #FFFFFF !important;
+    border: 1px solid #E2E8F0 !important;
+    border-radius: 12px !important;
+    padding: 1rem 1.25rem !important;
+    box-shadow: 0 1px 3px rgba(20, 43, 69, 0.05) !important;
+    border-top: 3px solid #142B45 !important;
+    transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+}
+
+[data-testid="stMetric"]:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 4px 12px rgba(20, 43, 69, 0.08) !important;
+}
+
+[data-testid="stMetricLabel"] {
+    font-size: 0.8rem !important;
+    font-weight: 600 !important;
+    color: #64748B !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.04em !important;
+}
+
+[data-testid="stMetricValue"] {
+    font-size: 1.85rem !important;
+    font-weight: 700 !important;
+    color: #142B45 !important;
+    line-height: 1.2 !important;
+}
+

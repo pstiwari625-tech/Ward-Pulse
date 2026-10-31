@@ -125,68 +125,60 @@ def plot_category_visualization(df: pd.DataFrame):
     if df is None or df.empty:
         st.info("No data available for category analysis.")
         return
-
-    # Check for target category columns (canonical 6 categories)
+    # Standard category mapping supporting both raw and ML model prediction prefixes
     target_cats = {
+        "pred_electrical": "Electrical & Streetlights",
         "electrical": "Electrical & Streetlights",
-        "solid_waste": "Solid Waste & Garbage",
-        "roads": "Roads & Pavements",
-        "animals_health": "Animals & Health",
-        "trees": "Urban Trees & Forestry",
-        "other": "Other Civic Complaints"
+        "streetlights": "Electrical & Streetlights",
+        "pred_solid_waste": "Solid Waste Management",
+        "solid_waste": "Solid Waste Management",
+        "garbage": "Solid Waste Management",
+        "pred_roads": "Roads & Transit Corridors",
+        "roads": "Roads & Transit Corridors",
+        "pred_animals_health": "Public Health & Animals",
+        "animals_health": "Public Health & Animals",
+        "pred_trees": "Trees & Greenery",
+        "trees": "Trees & Greenery",
+        "pred_other": "General Civic / Other",
+        "other": "General Civic / Other"
     }
 
-    # Find available category columns with valid numeric data
-    available_cats = {}
+    cat_colors = {
+        "Electrical & Streetlights": "#EAB308",
+        "Solid Waste Management": "#F59E0B",
+        "Roads & Transit Corridors": "#168C83",
+        "Public Health & Animals": "#3B82F6",
+        "Trees & Greenery": "#10B981",
+        "General Civic / Other": "#64748B"
+    }
+
+    # Aggregate by normalized display category name
+    cat_totals = {}
     for col_key, display_name in target_cats.items():
         if col_key in df.columns:
-            series = pd.to_numeric(df[col_key], errors="coerce").fillna(0.0)
-            if series.sum() > 0:
-                available_cats[col_key] = display_name
+            val = float(pd.to_numeric(df[col_key], errors="coerce").fillna(0.0).sum())
+            if val > 0 and display_name not in cat_totals:
+                cat_totals[display_name] = val
 
-    # Handle missing categories gracefully
-    if not available_cats:
+    if not cat_totals:
         st.markdown(
-            """
-            <div class="placeholder-box" style="min-height: 280px; padding: 2rem;">
-                <div class="placeholder-icon">🏷️</div>
-                <div class="placeholder-title">Category-Level Predictions Pending</div>
-                <div class="placeholder-desc">
-                    Department-level columns (<strong>Electrical, Solid Waste, Roads, Animals & Health, Trees, Other</strong>) are not present in the loaded dataset schema.
-                    Category projections will render automatically once department columns are provided in <code>data/predictions/ward_predictions.csv</code>.
-                </div>
-                <div style="margin-top: 1rem;">
-                    <span class="placeholder-badge" style="background: #F1F5F9; color: #64748B;">
-                        Awaiting Category Breakdowns
-                    </span>
-                </div>
-            </div>
-            """,
+            """<div class="placeholder-box" style="min-height: 280px; padding: 2rem;">
+<div class="placeholder-icon">🏷️</div>
+<div class="placeholder-title">Category-Level Predictions Pending</div>
+<div class="placeholder-desc">Department-level grievance columns are awaiting model processing.</div>
+<div style="margin-top: 1rem;"><span class="placeholder-badge" style="background: #F1F5F9; color: #64748B;">Awaiting Breakdowns</span></div>
+</div>""",
             unsafe_allow_html=True
         )
         return
 
-    # Calculate category sums
-    cat_data = []
-    cat_colors = {
-        "Electrical & Streetlights": "#EAB308",
-        "Solid Waste & Garbage": "#F59E0B",
-        "Roads & Pavements": "#168C83",
-        "Animals & Health": "#EF4444",
-        "Urban Trees & Forestry": "#10B981",
-        "Other Civic Complaints": "#64748B"
-    }
-
-    for col_key, display_name in available_cats.items():
-        total_val = float(pd.to_numeric(df[col_key], errors="coerce").fillna(0.0).sum())
-        cat_data.append({
-            "Category": display_name,
-            "Complaints": total_val,
-            "Color": cat_colors.get(display_name, "#142B45")
-        })
-
+    cat_data = [
+        {"Category": name, "Complaints": val, "Color": cat_colors.get(name, "#142B45")}
+        for name, val in cat_totals.items()
+    ]
     cat_df = pd.DataFrame(cat_data)
     total_cat_sum = cat_df["Complaints"].sum()
+
 
     # Donut chart
     fig = go.Figure(
@@ -225,10 +217,63 @@ def plot_category_visualization(df: pd.DataFrame):
 
     st.plotly_chart(fig, use_container_width=True)
 
-    # Note if any expected categories were missing
-    missing_cats = [v for k, v in target_cats.items() if k not in available_cats]
-    if missing_cats:
-        st.caption(f"ℹ️ Displaying {len(available_cats)} available categories. (Pending: {', '.join(missing_cats)})")
+
+def plot_monthly_demand_trend(df_long: Optional[pd.DataFrame] = None):
+    """
+    Feature: Monthly Forecast Demand Trajectory (18-Month Timeline).
+    Visualizes temporal pulse across categories from 2024-01 to 2025-06 using Plotly.
+    """
+    if df_long is None or df_long.empty:
+        from utils.data_loader import load_time_series_predictions
+        df_long = load_time_series_predictions()
+
+    if df_long is None or df_long.empty or "month" not in df_long.columns or "predicted_count" not in df_long.columns:
+        st.info("Time-series projection data pending model execution.")
+        return
+
+    category_labels = {
+        "animals_health": "Public Health & Animals",
+        "electrical": "Electrical & Streetlights",
+        "other": "General / Other",
+        "roads": "Roads & Corridors",
+        "solid_waste": "Solid Waste Management",
+        "trees": "Trees & Greenery"
+    }
+    category_colors = {
+        "Electrical & Streetlights": "#EAB308",
+        "Solid Waste Management": "#F59E0B",
+        "Roads & Corridors": "#168C83",
+        "Public Health & Animals": "#3B82F6",
+        "Trees & Greenery": "#10B981",
+        "General / Other": "#64748B"
+    }
+
+    monthly_agg = df_long.groupby(["month", "category_group"])["predicted_count"].sum().reset_index()
+    monthly_agg["Category"] = monthly_agg["category_group"].map(lambda c: category_labels.get(c, c.title()))
+
+    fig = px.line(
+        monthly_agg,
+        x="month",
+        y="predicted_count",
+        color="Category",
+        markers=True,
+        color_discrete_map=category_colors,
+        title="📅 18-Month City-Wide Forecast Trajectory by Civic Category (2024-01 to 2025-06)",
+        labels={"predicted_count": "Monthly Forecast Complaints", "month": "Timeline"}
+    )
+
+    fig.update_layout(
+        margin=dict(l=10, r=10, t=45, b=25),
+        height=360,
+        paper_bgcolor="rgba(0,0,0,0)",
+        plot_bgcolor="rgba(0,0,0,0)",
+        font=dict(family="sans-serif", size=11, color="#263445"),
+        xaxis=dict(showgrid=True, gridcolor="#E2E8F0"),
+        yaxis=dict(showgrid=True, gridcolor="#E2E8F0"),
+        legend=dict(orientation="h", yanchor="bottom", y=-0.35, xanchor="center", x=0.5)
+    )
+
+    st.plotly_chart(fig, use_container_width=True)
 
 
 def plot_demand_distribution(df: pd.DataFrame):
