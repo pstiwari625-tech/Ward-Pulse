@@ -27,15 +27,21 @@ SAMPLE_SUBMISSION_FILE = RAW_DATA_DIR / "sample_submission.csv" if (RAW_DATA_DIR
 
 # Prediction Output Contracts
 WARD_PREDICTIONS_FILE = PREDICTIONS_DIR / "ward_predictions.csv"
+WARD_PREDICTIONS_INTERVALS_FILE = PREDICTIONS_DIR / "ward_predictions_with_intervals.csv"
 WARD_SUMMARY_FILE = PREDICTIONS_DIR / "ward_summary_latest.csv"
+WARD_SUMMARY_INTERVALS_FILE = PREDICTIONS_DIR / "ward_summary_intervals.csv"
 MODEL_METRICS_FILE = MODELS_DIR / "model_metrics.json"
 MODEL_METADATA_FILE = MODELS_DIR / "model_metadata.json"
 CHAMPION_MODEL_FILE = MODELS_DIR / "champion_regressor.joblib"
 
+# Confidence Label Thresholds (relative interval width = (upper - lower) / pred)
+CONFIDENCE_HIGH_THRESHOLD = 0.25   # rel_width < 0.25 -> High confidence
+CONFIDENCE_MEDIUM_THRESHOLD = 0.40 # rel_width < 0.40 -> Medium confidence, else Low
+
 # 18-Month Target Evaluation Window
 TARGET_MONTHS = [f"2024-{m:02d}" for m in range(1, 13)] + [f"2025-{m:02d}" for m in range(1, 7)]
 
-# Categories
+# Canonical Categories (BBMP Municipal Grievances)
 CATEGORIES = [
     "animals_health",
     "electrical",
@@ -67,3 +73,4 @@ CPI_WEIGHT_INFRA_DEFICIT = 0.15
 # Reproducibility
 RANDOM_SEED = 42
 SPATIAL_CV_SPLITS = 5
+

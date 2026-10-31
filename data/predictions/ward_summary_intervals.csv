@@ -1,0 +1,41 @@
+ward_id,ward_name,total_pred_18m,total_lower_90,total_upper_90,top_category,confidence_label
+5,Jakkuru,5515.65,3412.3,7619.0,electrical,Low
+6,Thanisandra,4835.78,2866.29,6805.27,electrical,Low
+12,Shettihalli,2104.72,805.22,3404.22,electrical,Low
+15,T Dasarahalli,630.9,0.0,1342.77,electrical,Low
+27,Banasavadi,2282.47,929.24,3635.7,electrical,Low
+33,Manorayana Palya,648.46,0.0,1370.15,electrical,Low
+60,Sagayara Puram,567.03,0.0,1241.96,electrical,Low
+66,Subramanya Nagar,578.52,0.0,1260.24,electrical,Low
+72,Herohalli,2783.5,1289.16,4277.84,electrical,Low
+74,Shakthi Ganapathi Nagar,442.13,0.0,1038.26,electrical,Low
+77,Dattatreya Temple Ward,529.37,0.0,1181.55,electrical,Low
+79,Sarvagna Nagar,990.72,98.92,1882.52,solid_waste,Low
+82,Garudachar palya,1719.84,545.09,2894.59,solid_waste,Low
+85,Dodda Nekkundi,3511.87,1833.43,5190.31,solid_waste,Low
+88,Jeevanbhima Nagar,1015.98,112.89,1919.07,solid_waste,Low
+89,Jogupalya,707.55,0.0,1461.36,electrical,Low
+100,Basaveshwara Nagar,459.21,0.0,1066.72,electrical,Low
+111,Shantala Nagar,1370.65,321.84,2419.46,electrical,Low
+115,Vannar Pet,706.94,0.0,1460.42,electrical,Low
+117,Shanthi Nagar,906.01,53.14,1758.88,electrical,Low
+118,Sudham Nagar,684.11,0.0,1425.34,solid_waste,Low
+122,Kempapura Agrahara,201.53,0.0,604.54,electrical,Low
+126,Maruthi Mandir Ward,575.67,0.0,1255.72,electrical,Low
+128,Nagarabhavi,1100.09,160.4,2039.78,electrical,Low
+129,Jnana Bharathi Ward,4658.75,2725.64,6591.86,electrical,Low
+130,Ullalu,3948.73,2168.98,5728.48,electrical,Low
+132,Attiguppe,1230.41,236.66,2224.16,electrical,Low
+138,Chelavadi Palya,413.09,0.0,989.35,electrical,Low
+139,KR Market,578.55,0.0,1260.29,electrical,Low
+141,Azad Nagar,509.69,0.0,1149.65,electrical,Low
+146,Lakkasandra,771.45,0.0,1558.51,solid_waste,Low
+149,Varthur,3405.53,1752.69,5058.37,solid_waste,Low
+152,Suddagunte Palya,885.15,42.15,1728.15,electrical,Low
+164,Vidya Peeta Ward,1090.02,154.63,2025.41,electrical,Low
+169,Byra Sandra,626.47,0.0,1335.84,electrical,Low
+174,HSR Layout,3556.93,1867.76,5246.1,electrical,Low
+176,BTM Layout,1713.21,540.73,2885.69,electrical,Low
+182,Padmanabha Nagar,1390.11,333.89,2446.33,electrical,Low
+184,Uttarahalli,4746.74,2795.47,6698.01,electrical,Low
+193,Arakere,3589.41,1892.55,5286.27,electrical,Low

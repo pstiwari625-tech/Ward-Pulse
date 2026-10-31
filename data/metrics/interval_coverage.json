@@ -1,0 +1,19 @@
+{
+  "overall_coverage_pct": 89.96,
+  "mean_width_to_pred_ratio": 1.96,
+  "category_coverage_pct": {
+    "animals_health": 89.96,
+    "electrical": 89.96,
+    "other": 89.96,
+    "roads": 89.96,
+    "solid_waste": 89.96,
+    "trees": 89.96
+  },
+  "volume_bin_coverage_pct": {
+    "low": 89.95,
+    "med": 89.98,
+    "high": 89.95
+  },
+  "ward_total_coverage_pct": 89.74,
+  "ward_total_mean_width_ratio": 1.435
+}
