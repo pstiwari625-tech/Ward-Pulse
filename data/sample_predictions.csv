@@ -1,0 +1,11 @@
+ward_id,ward_name,zone,predicted_complaints,demand_tier
+101,Hazratganj,Zone 1 - Central,42,High
+102,Alambagh,Zone 2 - South,38,High
+103,Gomti Nagar,Zone 4 - East,29,Medium
+104,Indira Nagar,Zone 4 - East,31,Medium
+105,Chowk,Zone 1 - Central,35,High
+106,Mahanagar,Zone 3 - North,24,Medium
+107,Aminabad,Zone 1 - Central,27,Medium
+108,Rajajipuram,Zone 2 - South,22,Low
+109,Jankipuram,Zone 3 - North,19,Low
+110,Ashiyana,Zone 2 - South,16,Low

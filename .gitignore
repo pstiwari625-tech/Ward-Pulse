@@ -9,7 +9,10 @@ venv/
 .venv/
 ENV/
 
-# Data & Models (ignore temporary large intermediary processing if needed, keep contracts)
+# Streamlit run cache
+.streamlit/
+
+# Data & Models
 data/processed/*.parquet
 data/processed/*.feather
 *.log
