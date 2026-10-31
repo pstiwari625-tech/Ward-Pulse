@@ -1,15 +1,31 @@
 """
 Ward Pulse - Sidebar Component
-Renders the navigation sidebar, project branding, and pipeline status.
+Renders the navigation sidebar, project branding, and municipal filters.
+Clean, executive municipal design without developer clutter or phase tags.
 """
 
 import streamlit as st
-from typing import Dict, Any
+import pandas as pd
+from typing import Dict, Any, Optional
+from pathlib import Path
+
+
+def get_official_zones_and_wards():
+    """Load official zones and ward list for dynamic sidebar filtering."""
+    try:
+        from utils.geo_loader import load_ward_features
+        df_feat, _ = load_ward_features()
+        if df_feat is not None and not df_feat.empty:
+            zones = sorted(df_feat["zone"].dropna().unique().tolist())
+            return df_feat, zones
+    except Exception:
+        pass
+    return None, []
 
 
 def render_sidebar(data_status: Dict[str, Any]) -> str:
     """
-    Renders the sidebar navigation and branding.
+    Renders the sidebar navigation, municipal branding, and active filters.
     
     Args:
         data_status: Dictionary containing current pipeline connection state.
@@ -20,29 +36,15 @@ def render_sidebar(data_status: Dict[str, Any]) -> str:
     with st.sidebar:
         # Branding Header
         st.markdown(
-            """
-            <div class="sidebar-brand">
-                <div class="sidebar-logo">
-                    <div class="sidebar-logo-icon">WP</div>
-                    <div>
-                        <div class="sidebar-logo-text">Ward Pulse</div>
-                        <div class="sidebar-logo-tagline">Civic Demand Intelligence</div>
-                    </div>
-                </div>
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
-
-        # Municipal Location Indicator
-        st.markdown(
-            """
-            <div style="margin-bottom: 1.25rem;">
-                <span class="badge badge-location" style="width: 100%; justify-content: center;">
-                    📍 Lucknow Municipal Corp. (LMC)
-                </span>
-            </div>
-            """,
+            """<div class="sidebar-brand">
+<div class="sidebar-logo">
+<div class="sidebar-logo-icon">🏛️</div>
+<div>
+<div class="sidebar-logo-text">Ward Pulse</div>
+<div class="sidebar-logo-tagline">Civic Demand Intelligence</div>
+</div>
+</div>
+</div>""",
             unsafe_allow_html=True
         )
 
@@ -63,61 +65,66 @@ def render_sidebar(data_status: Dict[str, Any]) -> str:
             label_visibility="collapsed"
         )
         
-        # Clean selected option string for routing
         active_view = selected_nav.split(" ", 1)[1]
 
-        # Phase 2 Filter Preview (Disabled / Placeholder)
-        st.markdown('<div class="sidebar-section-title">Ward Filters (Phase 2)</div>', unsafe_allow_html=True)
+        # Municipal Filtering Section
+        st.markdown('<div class="sidebar-section-title">Municipal Jurisdiction</div>', unsafe_allow_html=True)
         
-        st.selectbox(
-            label="Select Zone",
-            options=["All Zones (Preview)", "Zone 1 - Central", "Zone 2 - South", "Zone 3 - North", "Zone 4 - East"],
-            index=0,
-            disabled=True,
-            help="Zone and ward level filtering will be fully active in Phase 2 with backend data connection."
-        )
+        df_feat, zones = get_official_zones_and_wards()
+        zone_options = ["All Administrative Zones"] + zones
         
-        st.selectbox(
-            label="Select Ward",
-            options=["All Wards (110 Wards)", "Ward 101 - Hazratganj", "Ward 102 - Alambagh", "Ward 103 - Gomti Nagar"],
+        selected_zone = st.selectbox(
+            label="Administrative Zone",
+            options=zone_options,
             index=0,
-            disabled=True,
-            help="Ward selection dropdown enabled in Phase 2."
+            key="sidebar_zone_select",
+            help="Filter analytics across specific administrative divisions."
         )
+        st.session_state["filter_zone"] = selected_zone
 
-        # Pipeline Status Card
-        st.markdown('<div class="sidebar-section-title">Backend Pipeline</div>', unsafe_allow_html=True)
-        
+        # Dynamic Ward list based on selected zone
+        if df_feat is not None and not df_feat.empty:
+            if selected_zone != "All Administrative Zones":
+                filtered_wards_df = df_feat[df_feat["zone"] == selected_zone].sort_values(by="ward_id")
+            else:
+                filtered_wards_df = df_feat.sort_values(by="ward_id")
+
+            ward_labels = ["All Municipal Wards"] + [
+                f"Ward {int(r['ward_id'])} - {r['ward_name']}" for _, r in filtered_wards_df.iterrows()
+            ]
+        else:
+            ward_labels = ["All Municipal Wards"]
+
+        selected_ward = st.selectbox(
+            label="Municipal Ward",
+            options=ward_labels,
+            index=0,
+            key="sidebar_ward_select",
+            help="Select a specific municipal ward for focused demand analysis."
+        )
+        st.session_state["filter_ward"] = selected_ward
+
+        # Minimal Status Indicator
         is_official = data_status.get("is_official", False)
-        badge_class = data_status.get("badge_class", "badge-pending")
-        badge_label = data_status.get("badge_label", "Dataset Pending")
+        badge_class = data_status.get("badge_class", "badge-live" if is_official else "badge-pending")
+        badge_label = data_status.get("badge_label", "System Active")
         
         st.markdown(
-            f"""
-            <div class="sidebar-pipeline-card">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-                    <h4>Data Status</h4>
-                    <span class="badge {badge_class}" style="font-size: 0.7rem; padding: 0.2rem 0.5rem;">
-                        {badge_label}
-                    </span>
-                </div>
-                <p><strong>Target Integration:</strong><br><code>data/predictions/ward_predictions.csv</code></p>
-                <p style="margin-top: 0.4rem;">{data_status.get('description', '')}</p>
-            </div>
-            """,
+            f"""<div style="margin-top: 2rem; padding: 0.75rem; background: #F8FAFC; border: 1px solid var(--border-color); border-radius: 8px;">
+<div style="display: flex; justify-content: space-between; align-items: center;">
+<span style="font-size: 0.75rem; font-weight: 600; color: #334155;">System Status</span>
+<span class="badge {badge_class}" style="font-size: 0.7rem; padding: 0.2rem 0.5rem;">{badge_label}</span>
+</div>
+<div style="font-size: 0.72rem; color: #64748B; margin-top: 0.35rem;">198 Municipal Wards Monitored</div>
+</div>""",
             unsafe_allow_html=True
         )
 
-        # Sidebar Footer
+        # Clean Sidebar Footer
         st.markdown(
-            """
-            <div style="margin-top: 2rem; padding-top: 1rem; border-top: 1px solid var(--border-color); text-align: center;">
-                <span style="font-size: 0.72rem; color: #94A3B8;">
-                    Ward Pulse v0.2 • Hackathon Edition<br>
-                    Phase 2: Dashboard & Analytics
-                </span>
-            </div>
-            """,
+            """<div style="margin-top: 1.5rem; padding-top: 0.75rem; border-top: 1px solid var(--border-color); text-align: center;">
+<span style="font-size: 0.72rem; color: #94A3B8;">Ward Pulse Platform • Civic Intelligence</span>
+</div>""",
             unsafe_allow_html=True
         )
 

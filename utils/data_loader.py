@@ -349,10 +349,26 @@ def get_kpi_metrics(df: Optional[pd.DataFrame], df_summary: Optional[pd.DataFram
         pct_high = round((high_demand_count / max(1, total_wards)) * 100, 1)
         high_demand_str = f"{high_demand_count} Wards ({pct_high}%)"
 
-        # Determine peak demand ward
-        max_idx = active_df["predicted_complaints"].idxmax()
-        ward_name = active_df.loc[max_idx, "ward_name"] if "ward_name" in active_df.columns else f"Ward {active_df.loc[max_idx, 'ward_id']}"
-        highest_demand_str = f"{ward_name} ({round(float(active_df.loc[max_idx, 'predicted_complaints']), 1)})"
+        # Determine top demanding category
+        cat_cols = [c for c in ["roads", "solid_waste", "electrical", "animals_health", "trees", "other"] if c in active_df.columns]
+        top_cat_str = "--"
+        if cat_cols:
+            cat_sums = {}
+            for c in cat_cols:
+                val = float(pd.to_numeric(active_df[c], errors="coerce").fillna(0.0).sum())
+                if val > 0:
+                    cat_sums[c] = val
+            if cat_sums:
+                top_cat = max(cat_sums, key=cat_sums.get)
+                display_names = {
+                    "roads": "Roads & Traffic",
+                    "solid_waste": "Solid Waste",
+                    "electrical": "Electrical",
+                    "animals_health": "Animals & Health",
+                    "trees": "Forestry & Trees",
+                    "other": "Other Governance"
+                }
+                top_cat_str = f"{display_names.get(top_cat, top_cat.title())} ({int(round(cat_sums[top_cat])):,})"
 
         return {
             "total_wards": f"{total_wards:,}",
@@ -360,6 +376,7 @@ def get_kpi_metrics(df: Optional[pd.DataFrame], df_summary: Optional[pd.DataFram
             "high_demand_wards": high_demand_str,
             "avg_predicted_complaints": f"{avg_complaints:,.1f}",
             "highest_demand_ward": highest_demand_str,
+            "top_demanding_category": top_cat_str,
             "raw_total_wards": total_wards,
             "raw_total_complaints": total_complaints,
             "raw_high_demand_count": high_demand_count,
