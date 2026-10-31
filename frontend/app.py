@@ -272,7 +272,7 @@ def main():
         col3.metric("Borderline Flip Wards", f"{sens.get('borderline_wards_count', 12)} / {total_wards}")
 
         st.write("### Low-Reporting Scenario (Administrative Sensitivity)")
-        st.caption("Policy scenario testing resource allocation if high-density or low-transit wards systematically under-report grievances (Not a claim of true need).")
+        st.caption("Policy scenario testing resource allocation if high-density or low-transit wards systematically under-report grievances (Administrative sensitivity analysis only).")
         equity_table = [
             {
                 "Ward ID": int(r["ward_id"]),
