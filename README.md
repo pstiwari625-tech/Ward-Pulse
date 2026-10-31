@@ -1,14 +1,16 @@
 # 🏛️ Ward Pulse — Civic Intelligence Dashboard
 
 > **Predicting ward-wise civic complaint demand for proactive municipal governance.**  
-> Target Deployment: **Lucknow Municipal Corporation (LMC), Uttar Pradesh**  
-> Current Status: **Phase 1: Frontend Foundation & UI Setup**
+> Target Deployment: **Bruhat Bengaluru Mahanagara Palike (BBMP), Bengaluru**  
+> Categories Modelled: **electrical, solid_waste, roads, animals_health, trees, other**
 
 ---
 
 ## 📌 Project Overview
 
-**Ward Pulse** is a civic intelligence platform developed during a 4–5 hour hackathon. Its core objective is forecasting municipal complaint demand (roads, garbage, water supply, streetlighting, sanitation) across Lucknow's 110 municipal wards.
+**Ward Pulse** is a civic intelligence platform for forecasting municipal grievance demand across Bengaluru's municipal wards across 6 civic categories: electrical, solid_waste, roads, animals_health, trees, and other.
+
+> **Note on Water Supply & Sewerage**: Water supply/sewerage is handled by BWSSB and is not in this dataset, so it is not modelled.
 
 In particular, Ward Pulse specializes in **zero-history complaint prediction**, inferring grievance demand in underserved or newly incorporated wards that lack historical digital logs.
 

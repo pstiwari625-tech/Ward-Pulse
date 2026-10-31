@@ -118,7 +118,7 @@ def plot_top_10_wards(df: pd.DataFrame):
 
 def plot_category_visualization(df: pd.DataFrame):
     """
-    Feature C: Complaint Category Visualization (Roads, garbage, water and streetlights).
+    Feature C: Complaint Category Visualization (Electrical, Solid Waste, Roads, Animals & Health, Trees, Other).
     Only displays category predictions when category-level data exists.
     Handles missing category columns gracefully.
     """
@@ -126,12 +126,14 @@ def plot_category_visualization(df: pd.DataFrame):
         st.info("No data available for category analysis.")
         return
 
-    # Check for target category columns
+    # Check for target category columns (canonical 6 categories)
     target_cats = {
+        "electrical": "Electrical & Streetlights",
+        "solid_waste": "Solid Waste & Garbage",
         "roads": "Roads & Pavements",
-        "garbage": "Garbage & Sanitation",
-        "water": "Water Supply",
-        "streetlights": "Streetlights & Electric"
+        "animals_health": "Animals & Health",
+        "trees": "Urban Trees & Forestry",
+        "other": "Other Civic Complaints"
     }
 
     # Find available category columns with valid numeric data
@@ -150,7 +152,7 @@ def plot_category_visualization(df: pd.DataFrame):
                 <div class="placeholder-icon">🏷️</div>
                 <div class="placeholder-title">Category-Level Predictions Pending</div>
                 <div class="placeholder-desc">
-                    Department-level columns (<strong>Roads, Garbage, Water, Streetlights</strong>) are not present in the loaded dataset schema.
+                    Department-level columns (<strong>Electrical, Solid Waste, Roads, Animals & Health, Trees, Other</strong>) are not present in the loaded dataset schema.
                     Category projections will render automatically once department columns are provided in <code>data/predictions/ward_predictions.csv</code>.
                 </div>
                 <div style="margin-top: 1rem;">
@@ -167,10 +169,12 @@ def plot_category_visualization(df: pd.DataFrame):
     # Calculate category sums
     cat_data = []
     cat_colors = {
+        "Electrical & Streetlights": "#EAB308",
+        "Solid Waste & Garbage": "#F59E0B",
         "Roads & Pavements": "#168C83",
-        "Garbage & Sanitation": "#F59E0B",
-        "Water Supply": "#3B82F6",
-        "Streetlights & Electric": "#EAB308"
+        "Animals & Health": "#EF4444",
+        "Urban Trees & Forestry": "#10B981",
+        "Other Civic Complaints": "#64748B"
     }
 
     for col_key, display_name in available_cats.items():
@@ -407,7 +411,7 @@ def render_ward_details_section(df: pd.DataFrame):
 
     # Determine display columns
     core_cols = ["ward_id", "ward_name", "predicted_complaints", "demand_level"]
-    category_cols = [c for c in ["roads", "garbage", "water", "streetlights"] if c in filtered_df.columns]
+    category_cols = [c for c in ["electrical", "solid_waste", "roads", "animals_health", "trees", "other"] if c in filtered_df.columns]
     
     # Keep only available relevant columns
     cols_to_show = [c for c in core_cols if c in filtered_df.columns] + category_cols
@@ -419,17 +423,19 @@ def render_ward_details_section(df: pd.DataFrame):
         "ward_name": "Ward Name",
         "predicted_complaints": "Predicted Complaints",
         "demand_level": "Demand Level",
+        "electrical": "Electrical",
+        "solid_waste": "Solid Waste",
         "roads": "Roads",
-        "garbage": "Garbage",
-        "water": "Water",
-        "streetlights": "Streetlights"
+        "animals_health": "Animals & Health",
+        "trees": "Trees",
+        "other": "Other"
     }
     display_df = display_df.rename(columns=rename_dict)
 
     # Format numeric values
     if "Predicted Complaints" in display_df.columns:
         display_df["Predicted Complaints"] = display_df["Predicted Complaints"].round(1)
-    for cat in ["Roads", "Garbage", "Water", "Streetlights"]:
+    for cat in ["Electrical", "Solid Waste", "Roads", "Animals & Health", "Trees", "Other"]:
         if cat in display_df.columns:
             display_df[cat] = display_df[cat].round(1)
 
@@ -459,7 +465,7 @@ def render_analytics_section(df: Optional[pd.DataFrame] = None, df_summary: Opti
     """
     Renders the unified Phase 2 Analytics section:
     - Top 10 wards (Plotly)
-    - Complaint Category Visualization (Roads, garbage, water, streetlights)
+    - Complaint Category Visualization (Electrical, Solid Waste, Roads, Animals & Health, Trees, Other)
     - Demand Distribution (Histogram + Level Breakdown)
     - Ward Details Table (Search, Filter, Sort)
     """

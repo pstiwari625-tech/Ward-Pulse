@@ -97,7 +97,7 @@ def render_welcome_card():
             <h2>Phase 2: Civic Demand Intelligence & Analytics</h2>
             <p>
                 Ward Pulse forecasts ward-level municipal grievance demand across solid waste management, road maintenance, 
-                water supply, and streetlighting. All KPI metrics, top-demand rankings, category distributions, and ward 
+                streetlighting, and animal health. All KPI metrics, top-demand rankings, category distributions, and ward 
                 registries are dynamically computed from the ingested prediction dataset.
             </p>
             <div class="welcome-highlights">
@@ -182,7 +182,7 @@ def render_overview(df: Optional[pd.DataFrame], data_status: Dict[str, Any], df_
     - Welcome Hero Card
     - Dynamic KPI Cards
     - Top 10 Wards (Plotly)
-    - Category Visualization (Roads, Garbage, Water, Streetlights)
+    - Category Visualization (Electrical, Solid Waste, Roads, Animals & Health, Trees, Other)
     - Demand Distribution Charts
     - Interactive Ward Details Table (Search, Filter, Sort)
     """

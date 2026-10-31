@@ -125,7 +125,7 @@ def normalize_ward_dataframe(df: pd.DataFrame) -> pd.DataFrame:
     - ward_name (str)
     - predicted_complaints (float/int)
     - demand_level (str)
-    and preserves any category columns (roads, garbage, water, streetlights).
+    and preserves any canonical category columns (electrical, solid_waste, roads, animals_health, trees, other).
     """
     df = df.copy()
 
@@ -200,21 +200,22 @@ def normalize_ward_dataframe(df: pd.DataFrame) -> pd.DataFrame:
     else:
         df["demand_level"] = df["demand_level"].astype(str).str.title()
 
-    # 5. Normalize category columns if present
+    # 5. Normalize category columns if present (canonical 6 categories)
     category_mappings = {
         "pred_roads": "roads",
-        "pred_solid_waste": "garbage",
-        "solid_waste": "garbage",
-        "pred_electrical": "streetlights",
-        "electrical": "streetlights",
-        "water_supply": "water",
-        "pred_water": "water"
+        "pred_solid_waste": "solid_waste",
+        "garbage": "solid_waste",
+        "pred_electrical": "electrical",
+        "streetlights": "electrical",
+        "pred_animals_health": "animals_health",
+        "pred_trees": "trees",
+        "pred_other": "other"
     }
     for old_col, new_col in category_mappings.items():
         if old_col in df.columns and new_col not in df.columns:
             df[new_col] = pd.to_numeric(df[old_col], errors="coerce").fillna(0.0)
 
-    for cat in ["roads", "garbage", "water", "streetlights"]:
+    for cat in ["roads", "solid_waste", "electrical", "animals_health", "trees", "other"]:
         if cat in df.columns:
             df[cat] = pd.to_numeric(df[cat], errors="coerce").fillna(0.0)
 
@@ -223,17 +224,15 @@ def normalize_ward_dataframe(df: pd.DataFrame) -> pd.DataFrame:
 
 def load_ward_predictions() -> Tuple[Optional[pd.DataFrame], Dict[str, Any]]:
     """
-    Load ward predictions dataset with resilient fallback:
+    Load ward predictions dataset:
     1. Looks for expected official prediction file at data/predictions/ward_predictions.csv.
        If it is the backend ML contract (ward_id, month, category_group, predicted_count),
        it seamlessly loads the summary or aggregates to provide ward-level predictions.
-    2. If missing or invalid, falls back to separate illustrative demo file data/demo_predictions.csv.
-    3. Clearly labels whether dataset is official or illustrative demo data.
+    2. Fallback to sample preview if official file is absent.
     """
     root = get_project_root()
     official_path = root / "data" / "predictions" / "ward_predictions.csv"
     summary_path = root / "data" / "predictions" / "ward_summary_latest.csv"
-    demo_path = root / "data" / "demo_predictions.csv"
 
     # Scenario 1: Official predictions file exists
     if official_path.exists():
@@ -280,23 +279,6 @@ def load_ward_predictions() -> Tuple[Optional[pd.DataFrame], Dict[str, Any]]:
                     "description": "Consuming aggregated prediction counts from data/predictions/ward_predictions.csv."
                 }
                 return df, status
-        except Exception as exc:
-            pass
-
-    # Scenario 2: Fall back to separate illustrative demo file
-    if demo_path.exists():
-        try:
-            demo_df = pd.read_csv(demo_path)
-            df = normalize_ward_dataframe(demo_df)
-            status = {
-                "is_official": False,
-                "status_text": "Illustrative Demo Dataset Active — Awaiting Official Dataset",
-                "badge_class": "badge-pending",
-                "badge_label": "Illustrative Demo Data",
-                "file_path": str(demo_path),
-                "description": "The organization's actual prediction dataset has not been provided yet. Displaying illustrative demo data for Phase 2 validation (Not actual ML output)."
-            }
-            return df, status
         except Exception as exc:
             pass
 
