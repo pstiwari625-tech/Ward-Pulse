@@ -8,6 +8,7 @@ from components.charts import (
     render_analytics_placeholder,
     plot_top_10_wards,
     plot_category_visualization,
+    plot_monthly_demand_trend,
     plot_demand_distribution,
     render_ward_details_section,
     render_dataset_preview,
@@ -18,8 +19,10 @@ __all__ = [
     "render_analytics_placeholder",
     "plot_top_10_wards",
     "plot_category_visualization",
+    "plot_monthly_demand_trend",
     "plot_demand_distribution",
     "render_ward_details_section",
     "render_dataset_preview",
     "render_analytics_section"
 ]
+
