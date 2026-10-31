@@ -1,0 +1,124 @@
+{
+  "evaluation_name": "Unified_LOWO_CrossValidation_Reconciliation",
+  "evaluation_window": "2024-01 to 2025-06 (18 months)",
+  "total_evaluated_folds": 156,
+  "total_evaluated_cells": 16848,
+  "models": {
+    "baseline": {
+      "mae": 8.65,
+      "rmse": 16.182,
+      "wape_pct": 60.8,
+      "pre_may_2024_mae": 5.405,
+      "post_may_2024_mae": 9.577,
+      "category_maes": {
+        "animals_health": 5.342,
+        "electrical": 15.019,
+        "other": 4.804,
+        "roads": 6.411,
+        "solid_waste": 16.964,
+        "trees": 3.362
+      }
+    },
+    "ridge_only": {
+      "mae": 6.937,
+      "rmse": 14.305,
+      "wape_pct": 48.76,
+      "pre_may_2024_mae": 4.453,
+      "post_may_2024_mae": 7.647,
+      "category_maes": {
+        "animals_health": 3.961,
+        "electrical": 11.886,
+        "other": 3.284,
+        "roads": 6.196,
+        "solid_waste": 13.436,
+        "trees": 2.86
+      }
+    },
+    "production": {
+      "mae": 6.636,
+      "rmse": 13.878,
+      "wape_pct": 46.64,
+      "pre_may_2024_mae": 4.307,
+      "post_may_2024_mae": 7.302,
+      "category_maes": {
+        "animals_health": 3.601,
+        "electrical": 11.77,
+        "other": 3.148,
+        "roads": 5.686,
+        "solid_waste": 12.756,
+        "trees": 2.856
+      }
+    },
+    "nested_cv": {
+      "mae": 6.588,
+      "rmse": 13.711,
+      "wape_pct": 46.3,
+      "pre_may_2024_mae": 4.287,
+      "post_may_2024_mae": 7.245,
+      "category_maes": {
+        "animals_health": 3.552,
+        "electrical": 11.668,
+        "other": 3.116,
+        "roads": 5.694,
+        "solid_waste": 12.675,
+        "trees": 2.822
+      }
+    }
+  },
+  "bandwidth_sweep": {
+    "0.8": {
+      "bandwidth_km": 0.8,
+      "mae": 7.014,
+      "rmse": 14.523
+    },
+    "1.5": {
+      "bandwidth_km": 1.5,
+      "mae": 6.684,
+      "rmse": 13.898
+    },
+    "2.5": {
+      "bandwidth_km": 2.5,
+      "mae": 6.588,
+      "rmse": 13.711
+    },
+    "3.5": {
+      "bandwidth_km": 3.5,
+      "mae": 6.636,
+      "rmse": 13.878
+    },
+    "5.0": {
+      "bandwidth_km": 5.0,
+      "mae": 6.713,
+      "rmse": 14.036
+    },
+    "7.0": {
+      "bandwidth_km": 7.0,
+      "mae": 6.776,
+      "rmse": 14.103
+    }
+  },
+  "nested_cv_tuning": {
+    "tested_candidates": [
+      1.5,
+      2.5,
+      3.5,
+      5.0
+    ],
+    "chosen_bandwidth_frequencies": {
+      "1.5": 0,
+      "2.5": 156,
+      "3.5": 0,
+      "5.0": 0
+    },
+    "nested_mae": 6.588,
+    "global_prod_mae": 6.636,
+    "score_difference": 0.048
+  },
+  "ward_bootstrap_95ci": {
+    "resamples": 1000,
+    "mean_delta_mae": -2.016,
+    "ci_95_lower": -2.532,
+    "ci_95_upper": -1.492,
+    "strictly_excludes_zero": true
+  }
+}
