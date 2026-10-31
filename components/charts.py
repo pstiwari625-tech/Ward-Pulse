@@ -8,6 +8,37 @@ import pandas as pd
 from typing import Optional
 
 
+def render_analytics_placeholder():
+    """
+    Renders the civic analytics section placeholder when datasets are missing or pending.
+    """
+    st.markdown(
+        """
+        <div class="section-card">
+            <div class="section-card-header">
+                <div>
+                    <div class="section-card-title">
+                        <span>📈</span> Ward-Wise Civic Analytics
+                    </div>
+                    <div class="section-card-subtitle">
+                        Comparative demand intelligence, complaint category distributions, and ward ranking
+                    </div>
+                </div>
+                <span class="placeholder-badge">Awaiting Data</span>
+            </div>
+            <div class="placeholder-box" style="min-height: 220px;">
+                <div class="placeholder-icon">📊</div>
+                <div class="placeholder-title">Civic Complaint Analytics Pending</div>
+                <div class="placeholder-desc">
+                    Analytics visualizations will render automatically once predictions are loaded.
+                </div>
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+
 def render_analytics_section(df_summary: Optional[pd.DataFrame] = None, df_predictions: Optional[pd.DataFrame] = None):
     """
     Renders live Plotly analytics charts if data is present, otherwise falls back to placeholder.
