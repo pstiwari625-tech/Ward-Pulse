@@ -17,7 +17,7 @@ from components.charts import (
     render_ward_details_section,
     render_dataset_preview
 )
-from components.ward_map import render_map_placeholder
+from components.ward_map import render_official_ward_map, render_map_placeholder
 from utils.data_loader import get_kpi_metrics, load_model_metrics, load_model_metadata
 
 
@@ -252,19 +252,10 @@ def render_analytics_view(df: Optional[pd.DataFrame], df_summary: Optional[pd.Da
 
 def render_map_view(df_summary: Optional[pd.DataFrame] = None, geojson_data: Optional[Dict[str, Any]] = None):
     """
-    Renders the dedicated Map View page.
-    Strict restriction: Phase 3 Target - Geographical map is preserved as placeholder.
+    Renders the dedicated Map View page with official 198 ward boundaries.
+    Integrates official hackathon GeoJSON polygons and socio-economic attributes.
     """
-    st.markdown(
-        """
-        <div style="margin-bottom: 1.5rem;">
-            <h2 style="color: var(--primary); margin-bottom: 0.25rem;">🗺️ Geographical Ward Map</h2>
-            <p style="color: var(--text-secondary); margin: 0;">Geo-spatial boundary overlay scheduled for Phase 3 implementation.</p>
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
-    render_map_placeholder()
+    render_official_ward_map(df_summary=df_summary)
 
 
 def render_about_view():
@@ -308,10 +299,10 @@ def render_about_view():
                             KPI Cards, Top 10 Wards (Plotly), Category Visualization, Demand Distribution, Ward Details Table.
                         </div>
                     </div>
-                    <div style="padding: 1rem; background: #F8FAFC; border-radius: 8px; border-left: 3px solid #CBD5E1;">
-                        <div style="font-weight: 700; color: #64748B; font-size: 0.85rem;">PHASE 3 (UPCOMING)</div>
-                        <div style="font-size: 0.8rem; color: #475569; margin-top: 0.25rem;">
-                            Interactive Geographical Ward Map, GeoJSON Boundary Overlays, Spatial Choropleth.
+                    <div style="padding: 1rem; background: #ECFDF5; border-radius: 8px; border-left: 3px solid #10B981;">
+                        <div style="font-weight: 700; color: #065F46; font-size: 0.85rem;">PHASE 3 (COMPLETED)</div>
+                        <div style="font-size: 0.8rem; color: #047857; margin-top: 0.25rem;">
+                            Official 198 GeoJSON Ward Boundaries, Ward Features Join, Interactive Folium Map, Neutral Baseline.
                         </div>
                     </div>
                     <div style="padding: 1rem; background: #F8FAFC; border-radius: 8px; border-left: 3px solid #CBD5E1;">
