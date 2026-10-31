@@ -10,7 +10,8 @@ venv/
 ENV/
 
 # Streamlit run cache
-.streamlit/
+.streamlit/*
+!.streamlit/config.toml
 
 # Data & Models
 data/processed/*.parquet
