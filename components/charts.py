@@ -1,11 +1,16 @@
 """
 Ward Pulse - Charts & Analytics Component
-Provides layout placeholders, container components, and stub functions for Phase 2 visualizations.
+Phase 2: Dashboard and Analytics Implementation
+Provides Plotly visualizations for Top 10 wards, category breakdowns,
+demand distribution, and interactive ward details.
 """
 
 import streamlit as st
 import pandas as pd
-from typing import Optional
+import numpy as np
+from typing import Optional, List, Dict, Any
+import plotly.express as px
+import plotly.graph_objects as go
 
 
 def render_analytics_placeholder():
@@ -39,11 +44,428 @@ def render_analytics_placeholder():
     )
 
 
-def render_analytics_section(df_summary: Optional[pd.DataFrame] = None, df_predictions: Optional[pd.DataFrame] = None):
+def plot_top_10_wards(df: pd.DataFrame):
     """
-    Renders live Plotly analytics charts if data is present, otherwise falls back to placeholder.
+    Feature B: Top 10 Wards with the highest predicted complaints.
+    Sorted in descending order using Plotly.
     """
-    if (df_summary is None or df_summary.empty) and (df_predictions is None or df_predictions.empty):
+    if df is None or df.empty or "predicted_complaints" not in df.columns:
+        st.info("No data available to display Top 10 wards.")
+        return
+
+    # Extract top 10 wards sorted descending
+    top_10 = df.sort_values(by="predicted_complaints", ascending=False).head(10).copy()
+
+    # For horizontal bar, Plotly renders bottom-to-top, so sort ascending for display
+    plot_df = top_10.sort_values(by="predicted_complaints", ascending=True).copy()
+
+    # Create formatted labels
+    name_col = "ward_name" if "ward_name" in plot_df.columns else "ward_id"
+    plot_df["display_label"] = plot_df.apply(
+        lambda r: f"{r[name_col]} (Ward {r['ward_id']})", axis=1
+    )
+    level_col = "demand_level" if "demand_level" in plot_df.columns else "demand_tier"
+    plot_df["level_val"] = plot_df[level_col] if level_col in plot_df.columns else "Standard"
+
+    # Color mapping for demand level
+    level_color_map = {
+        "Critical": "#EF4444",
+        "High": "#F59E0B",
+        "Medium": "#3B82F6",
+        "Low": "#10B981"
+    }
+
+    fig = go.Figure()
+
+    fig.add_trace(
+        go.Bar(
+            x=plot_df["predicted_complaints"],
+            y=plot_df["display_label"],
+            orientation="h",
+            marker=dict(
+                color=[level_color_map.get(lvl, "#168C83") for lvl in plot_df["level_val"]],
+                line=dict(color="#142B45", width=1)
+            ),
+            text=[f"{v:,.1f}" for v in plot_df["predicted_complaints"]],
+            textposition="auto",
+            customdata=plot_df[[name_col, "ward_id", "level_val"]],
+            hovertemplate=(
+                "<b>%{customdata[0]}</b> (Ward %{customdata[1]})<br>"
+                "Predicted Complaints: <b>%{x:,.1f}</b><br>"
+                "Demand Level: <b>%{customdata[2]}</b><extra></extra>"
+            )
+        )
+    )
+
+    fig.update_layout(
+        title=dict(
+            text="🏆 Top 10 Wards by Predicted Complaint Volume",
+            font=dict(size=14, color="#142B45", family="Segoe UI, sans-serif")
+        ),
+        xaxis_title="Predicted Monthly Complaints",
+        yaxis_title="",
+        margin=dict(l=10, r=20, t=45, b=25),
+        height=380,
+        paper_bgcolor="rgba(0,0,0,0)",
+        plot_bgcolor="rgba(0,0,0,0)",
+        font=dict(family="sans-serif", size=11, color="#263445"),
+        xaxis=dict(showgrid=True, gridcolor="#E2E8F0", zeroline=False),
+        yaxis=dict(showgrid=False)
+    )
+
+    st.plotly_chart(fig, use_container_width=True)
+
+
+def plot_category_visualization(df: pd.DataFrame):
+    """
+    Feature C: Complaint Category Visualization (Roads, garbage, water and streetlights).
+    Only displays category predictions when category-level data exists.
+    Handles missing category columns gracefully.
+    """
+    if df is None or df.empty:
+        st.info("No data available for category analysis.")
+        return
+
+    # Check for target category columns
+    target_cats = {
+        "roads": "Roads & Pavements",
+        "garbage": "Garbage & Sanitation",
+        "water": "Water Supply",
+        "streetlights": "Streetlights & Electric"
+    }
+
+    # Find available category columns with valid numeric data
+    available_cats = {}
+    for col_key, display_name in target_cats.items():
+        if col_key in df.columns:
+            series = pd.to_numeric(df[col_key], errors="coerce").fillna(0.0)
+            if series.sum() > 0:
+                available_cats[col_key] = display_name
+
+    # Handle missing categories gracefully
+    if not available_cats:
+        st.markdown(
+            """
+            <div class="placeholder-box" style="min-height: 280px; padding: 2rem;">
+                <div class="placeholder-icon">🏷️</div>
+                <div class="placeholder-title">Category-Level Predictions Pending</div>
+                <div class="placeholder-desc">
+                    Department-level columns (<strong>Roads, Garbage, Water, Streetlights</strong>) are not present in the loaded dataset schema.
+                    Category projections will render automatically once department columns are provided in <code>data/predictions/ward_predictions.csv</code>.
+                </div>
+                <div style="margin-top: 1rem;">
+                    <span class="placeholder-badge" style="background: #F1F5F9; color: #64748B;">
+                        Awaiting Category Breakdowns
+                    </span>
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+        return
+
+    # Calculate category sums
+    cat_data = []
+    cat_colors = {
+        "Roads & Pavements": "#168C83",
+        "Garbage & Sanitation": "#F59E0B",
+        "Water Supply": "#3B82F6",
+        "Streetlights & Electric": "#EAB308"
+    }
+
+    for col_key, display_name in available_cats.items():
+        total_val = float(pd.to_numeric(df[col_key], errors="coerce").fillna(0.0).sum())
+        cat_data.append({
+            "Category": display_name,
+            "Complaints": total_val,
+            "Color": cat_colors.get(display_name, "#142B45")
+        })
+
+    cat_df = pd.DataFrame(cat_data)
+    total_cat_sum = cat_df["Complaints"].sum()
+
+    # Donut chart
+    fig = go.Figure(
+        data=[
+            go.Pie(
+                labels=cat_df["Category"],
+                values=cat_df["Complaints"],
+                hole=0.48,
+                marker=dict(colors=[c["Color"] for c in cat_data], line=dict(color="#FFFFFF", width=2)),
+                textinfo="percent+label",
+                hovertemplate="<b>%{label}</b><br>Forecast: <b>%{value:,.1f}</b> complaints<br>Share: <b>%{percent}</b><extra></extra>"
+            )
+        ]
+    )
+
+    fig.update_layout(
+        title=dict(
+            text="🏷️ Civic Category Demand Breakdown",
+            font=dict(size=14, color="#142B45", family="Segoe UI, sans-serif")
+        ),
+        margin=dict(l=10, r=10, t=45, b=20),
+        height=380,
+        paper_bgcolor="rgba(0,0,0,0)",
+        font=dict(family="sans-serif", size=11, color="#263445"),
+        showlegend=False,
+        annotations=[
+            dict(
+                text=f"<b>{int(round(total_cat_sum)):,}</b><br><span style='font-size:10px; color:#64748B;'>Category Total</span>",
+                x=0.5,
+                y=0.5,
+                font_size=13,
+                showarrow=False
+            )
+        ]
+    )
+
+    st.plotly_chart(fig, use_container_width=True)
+
+    # Note if any expected categories were missing
+    missing_cats = [v for k, v in target_cats.items() if k not in available_cats]
+    if missing_cats:
+        st.caption(f"ℹ️ Displaying {len(available_cats)} available categories. (Pending: {', '.join(missing_cats)})")
+
+
+def plot_demand_distribution(df: pd.DataFrame):
+    """
+    Feature D: Demand Distribution.
+    Creates meaningful Plotly charts to display complaint demand across wards:
+    1. Demand Frequency Histogram with city mean reference line.
+    2. Demand Level Risk Stratification (Proportion of Wards per Demand Tier).
+    """
+    if df is None or df.empty or "predicted_complaints" not in df.columns:
+        st.info("No data available to display demand distribution.")
+        return
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        st.markdown('<div class="section-card">', unsafe_allow_html=True)
+        # Histogram of complaint demand across wards
+        mean_val = float(df["predicted_complaints"].mean())
+        median_val = float(df["predicted_complaints"].median())
+
+        fig_hist = px.histogram(
+            df,
+            x="predicted_complaints",
+            nbins=12,
+            title="📊 Complaint Demand Distribution Across Wards",
+            labels={"predicted_complaints": "Predicted Monthly Complaints"},
+            color_discrete_sequence=["#142B45"]
+        )
+
+        # Add vertical line for city mean
+        fig_hist.add_vline(
+            x=mean_val,
+            line_dash="dash",
+            line_color="#F59E0B",
+            annotation_text=f"Mean: {mean_val:.1f}",
+            annotation_position="top right"
+        )
+
+        fig_hist.update_layout(
+            yaxis_title="Number of Wards",
+            margin=dict(l=10, r=10, t=45, b=25),
+            height=340,
+            paper_bgcolor="rgba(0,0,0,0)",
+            plot_bgcolor="rgba(0,0,0,0)",
+            font=dict(family="sans-serif", size=11, color="#263445"),
+            xaxis=dict(showgrid=True, gridcolor="#E2E8F0"),
+            yaxis=dict(showgrid=True, gridcolor="#E2E8F0")
+        )
+        st.plotly_chart(fig_hist, use_container_width=True)
+        st.markdown('</div>', unsafe_allow_html=True)
+
+    with col2:
+        st.markdown('<div class="section-card">', unsafe_allow_html=True)
+        # Demand Level Distribution Bar Chart
+        level_col = "demand_level" if "demand_level" in df.columns else "demand_tier"
+        if level_col in df.columns:
+            counts = df[level_col].value_counts().reset_index()
+            counts.columns = ["Demand Level", "Ward Count"]
+
+            level_colors = {
+                "Critical": "#EF4444",
+                "High": "#F59E0B",
+                "Medium": "#3B82F6",
+                "Low": "#10B981"
+            }
+
+            fig_level = px.bar(
+                counts,
+                x="Demand Level",
+                y="Ward Count",
+                color="Demand Level",
+                color_discrete_map=level_colors,
+                title="🎯 Wards by Demand Priority Level",
+                text="Ward Count"
+            )
+
+            fig_level.update_layout(
+                margin=dict(l=10, r=10, t=45, b=25),
+                height=340,
+                paper_bgcolor="rgba(0,0,0,0)",
+                plot_bgcolor="rgba(0,0,0,0)",
+                showlegend=False,
+                font=dict(family="sans-serif", size=11, color="#263445"),
+                xaxis=dict(showgrid=False),
+                yaxis=dict(showgrid=True, gridcolor="#E2E8F0")
+            )
+            st.plotly_chart(fig_level, use_container_width=True)
+        else:
+            st.info("Demand level column not found in dataset.")
+        st.markdown('</div>', unsafe_allow_html=True)
+
+
+def render_ward_details_section(df: pd.DataFrame):
+    """
+    Feature E: Ward Details.
+    Displays ward ID, ward name, predicted complaints, and demand level.
+    Adds useful sorting and filtering.
+    """
+    if df is None or df.empty:
+        st.info("No ward detail records to display.")
+        return
+
+    st.markdown(
+        """
+        <div class="section-card">
+            <div class="section-card-header">
+                <div>
+                    <div class="section-card-title">
+                        <span>📋</span> Ward-Level Details & Demand Intelligence
+                    </div>
+                    <div class="section-card-subtitle">
+                        Filterable and sortable registry of all monitored municipal wards
+                    </div>
+                </div>
+            </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+    # Filter & Sort Controls
+    col_search, col_filter, col_sort = st.columns([1.5, 1.2, 1.3])
+
+    with col_search:
+        search_query = st.text_input(
+            "🔍 Search Ward Name or ID",
+            placeholder="Type name (e.g. Hazratganj) or ID...",
+            key="ward_details_search"
+        )
+
+    # Demand Level filter
+    level_col = "demand_level" if "demand_level" in df.columns else "demand_tier"
+    available_levels = sorted(list(df[level_col].unique())) if level_col in df.columns else []
+
+    with col_filter:
+        selected_levels = st.multiselect(
+            "🎯 Filter by Demand Level",
+            options=available_levels,
+            default=available_levels,
+            key="ward_details_level_filter"
+        )
+
+    with col_sort:
+        sort_choice = st.selectbox(
+            "↕️ Sort Wards By",
+            options=[
+                "Predicted Complaints (Highest First)",
+                "Predicted Complaints (Lowest First)",
+                "Ward Name (A to Z)",
+                "Ward ID (Ascending)"
+            ],
+            index=0,
+            key="ward_details_sort"
+        )
+
+    # Apply filters
+    filtered_df = df.copy()
+
+    if selected_levels and level_col in filtered_df.columns:
+        filtered_df = filtered_df[filtered_df[level_col].isin(selected_levels)]
+
+    if search_query.strip():
+        q = search_query.strip().lower()
+        name_col = "ward_name" if "ward_name" in filtered_df.columns else "ward_id"
+        filtered_df = filtered_df[
+            filtered_df[name_col].astype(str).str.lower().str.contains(q) |
+            filtered_df["ward_id"].astype(str).str.contains(q)
+        ]
+
+    # Apply sorting
+    if sort_choice == "Predicted Complaints (Highest First)":
+        filtered_df = filtered_df.sort_values(by="predicted_complaints", ascending=False)
+    elif sort_choice == "Predicted Complaints (Lowest First)":
+        filtered_df = filtered_df.sort_values(by="predicted_complaints", ascending=True)
+    elif sort_choice == "Ward Name (A to Z)":
+        name_col = "ward_name" if "ward_name" in filtered_df.columns else "ward_id"
+        filtered_df = filtered_df.sort_values(by=name_col, ascending=True)
+    elif sort_choice == "Ward ID (Ascending)":
+        filtered_df = filtered_df.sort_values(by="ward_id", ascending=True)
+
+    # Determine display columns
+    core_cols = ["ward_id", "ward_name", "predicted_complaints", "demand_level"]
+    category_cols = [c for c in ["roads", "garbage", "water", "streetlights"] if c in filtered_df.columns]
+    
+    # Keep only available relevant columns
+    cols_to_show = [c for c in core_cols if c in filtered_df.columns] + category_cols
+    display_df = filtered_df[cols_to_show].copy()
+
+    # Rename for professional table headers
+    rename_dict = {
+        "ward_id": "Ward ID",
+        "ward_name": "Ward Name",
+        "predicted_complaints": "Predicted Complaints",
+        "demand_level": "Demand Level",
+        "roads": "Roads",
+        "garbage": "Garbage",
+        "water": "Water",
+        "streetlights": "Streetlights"
+    }
+    display_df = display_df.rename(columns=rename_dict)
+
+    # Format numeric values
+    if "Predicted Complaints" in display_df.columns:
+        display_df["Predicted Complaints"] = display_df["Predicted Complaints"].round(1)
+    for cat in ["Roads", "Garbage", "Water", "Streetlights"]:
+        if cat in display_df.columns:
+            display_df[cat] = display_df[cat].round(1)
+
+    # Record metrics
+    st.caption(f"Showing **{len(display_df)}** of **{len(df)}** wards • Total Predicted Complaints in View: **{display_df['Predicted Complaints'].sum():,.1f}**" if "Predicted Complaints" in display_df.columns else f"Showing {len(display_df)} wards")
+
+    # Render interactive DataFrame
+    st.dataframe(
+        display_df,
+        use_container_width=True,
+        hide_index=True
+    )
+
+    # Export button
+    csv_bytes = display_df.to_csv(index=False).encode("utf-8")
+    st.download_button(
+        label="📥 Download Filtered Ward Predictions (CSV)",
+        data=csv_bytes,
+        file_name="ward_pulse_predictions_filtered.csv",
+        mime="text/csv"
+    )
+
+    st.markdown("</div>", unsafe_allow_html=True)
+
+
+def render_analytics_section(df: Optional[pd.DataFrame] = None, df_summary: Optional[pd.DataFrame] = None):
+    """
+    Renders the unified Phase 2 Analytics section:
+    - Top 10 wards (Plotly)
+    - Complaint Category Visualization (Roads, garbage, water, streetlights)
+    - Demand Distribution (Histogram + Level Breakdown)
+    - Ward Details Table (Search, Filter, Sort)
+    """
+    active_df = df if df is not None and not df.empty else df_summary
+
+    if active_df is None or active_df.empty:
         render_analytics_placeholder()
         return
 
@@ -56,187 +478,38 @@ def render_analytics_section(df_summary: Optional[pd.DataFrame] = None, df_predi
                         <span>📈</span> Ward-Wise Civic Demand Analytics
                     </div>
                     <div class="section-card-subtitle">
-                        Comparative demand intelligence, complaint category distributions, and priority rankings
+                        Top demand centers, category distributions, and predictive demand modeling
                     </div>
                 </div>
-                <span class="badge badge-live">Live ML Analytics</span>
+                <span class="badge badge-live">Phase 2 Active</span>
             </div>
         </div>
         """,
         unsafe_allow_html=True
     )
 
+    # 1. Top 10 Wards & Category Breakdown
     col1, col2 = st.columns(2)
-
     with col1:
         st.markdown('<div class="section-card">', unsafe_allow_html=True)
-        if df_summary is not None and not df_summary.empty and "total_predicted_monthly" in df_summary.columns:
-            plot_ward_demand_bar(df_summary)
-        elif df_predictions is not None and not df_predictions.empty:
-            plot_prediction_demand_bar(df_predictions)
-        else:
-            st.info("No summary data available for ranking chart.")
+        plot_top_10_wards(active_df)
         st.markdown('</div>', unsafe_allow_html=True)
 
     with col2:
         st.markdown('<div class="section-card">', unsafe_allow_html=True)
-        if df_summary is not None and not df_summary.empty:
-            plot_category_breakdown_pie(df_summary)
-        elif df_predictions is not None and not df_predictions.empty and "category_group" in df_predictions.columns:
-            plot_predictions_category_pie(df_predictions)
-        else:
-            st.info("No category data available for distribution chart.")
+        plot_category_visualization(active_df)
         st.markdown('</div>', unsafe_allow_html=True)
 
+    # 2. Demand Distribution
+    plot_demand_distribution(active_df)
 
-def plot_ward_demand_bar(df_summary: pd.DataFrame):
-    """Generates horizontal bar chart of top 15 wards by predicted monthly demand."""
-    try:
-        import plotly.express as px
-
-        top_df = df_summary.sort_values(by="total_predicted_monthly", ascending=True).tail(15)
-        name_col = "ward_name" if "ward_name" in top_df.columns else "ward_id"
-
-        fig = px.bar(
-            top_df,
-            x="total_predicted_monthly",
-            y=name_col,
-            orientation="h",
-            title="Top 15 Wards by Monthly Complaint Demand",
-            color="cpi_score" if "cpi_score" in top_df.columns else "total_predicted_monthly",
-            color_continuous_scale="Viridis",
-            labels={"total_predicted_monthly": "Forecasted Monthly Complaints", name_col: "Ward", "cpi_score": "CPI Score"}
-        )
-        fig.update_layout(
-            margin=dict(l=10, r=10, t=40, b=10),
-            height=380,
-            paper_bgcolor="rgba(0,0,0,0)",
-            plot_bgcolor="rgba(0,0,0,0)",
-            font=dict(family="sans-serif", size=11, color="#263445")
-        )
-        st.plotly_chart(fig, use_container_width=True)
-    except Exception as exc:
-        st.error(f"Error rendering ward demand bar: {exc}")
-
-
-def plot_prediction_demand_bar(df_predictions: pd.DataFrame):
-    """Fallback horizontal bar chart when only ward_predictions.csv is available."""
-    try:
-        import plotly.express as px
-        col = "predicted_complaints" if "predicted_complaints" in df_predictions.columns else "predicted_count"
-        grouped = df_predictions.groupby("ward_id")[col].sum().reset_index()
-        top_df = grouped.sort_values(by=col, ascending=True).tail(15)
-        top_df["ward_label"] = top_df["ward_id"].apply(lambda x: f"Ward {x}")
-
-        fig = px.bar(
-            top_df,
-            x=col,
-            y="ward_label",
-            orientation="h",
-            title="Top Wards by Total Forecasted Complaints",
-            color=col,
-            color_continuous_scale="Viridis"
-        )
-        fig.update_layout(margin=dict(l=10, r=10, t=40, b=10), height=380)
-        st.plotly_chart(fig, use_container_width=True)
-    except Exception as exc:
-        st.error(f"Error rendering demand bar: {exc}")
-
-
-def plot_category_breakdown_pie(df_summary: pd.DataFrame):
-    """Generates a donut chart of city-wide civic category breakdown."""
-    try:
-        import plotly.express as px
-
-        cat_cols = {
-            "pred_electrical": "Electrical",
-            "pred_solid_waste": "Solid Waste",
-            "pred_roads": "Roads & Pavements",
-            "pred_animals_health": "Animals & Health",
-            "pred_trees": "Trees & Greenery",
-            "pred_other": "Other Services"
-        }
-
-        cat_data = []
-        for col, label in cat_cols.items():
-            if col in df_summary.columns:
-                cat_data.append({"Category": label, "Monthly Complaints": df_summary[col].sum()})
-
-        if cat_data:
-            cat_df = pd.DataFrame(cat_data)
-            fig = px.pie(
-                cat_df,
-                names="Category",
-                values="Monthly Complaints",
-                hole=0.45,
-                title="City-Wide Demand by Civic Service Category",
-                color_discrete_sequence=["#142B45", "#168C83", "#F59E0B", "#3B82F6", "#10B981", "#8B5CF6"]
-            )
-            fig.update_layout(
-                margin=dict(l=10, r=10, t=40, b=10),
-                height=380,
-                paper_bgcolor="rgba(0,0,0,0)",
-                font=dict(family="sans-serif", size=11, color="#263445")
-            )
-            st.plotly_chart(fig, use_container_width=True)
-    except Exception as exc:
-        st.error(f"Error rendering category breakdown: {exc}")
-
-
-def plot_predictions_category_pie(df_predictions: pd.DataFrame):
-    """Generates category donut from detailed predictions dataframe."""
-    try:
-        import plotly.express as px
-        col = "predicted_complaints" if "predicted_complaints" in df_predictions.columns else "predicted_count"
-        grouped = df_predictions.groupby("category_group")[col].sum().reset_index()
-        grouped["Category"] = grouped["category_group"].apply(lambda s: str(s).replace("_", " ").title())
-
-        fig = px.pie(
-            grouped,
-            names="Category",
-            values=col,
-            hole=0.45,
-            title="City-Wide Category Demand Breakdown",
-            color_discrete_sequence=["#142B45", "#168C83", "#F59E0B", "#3B82F6", "#10B981", "#8B5CF6"]
-        )
-        fig.update_layout(margin=dict(l=10, r=10, t=40, b=10), height=380)
-        st.plotly_chart(fig, use_container_width=True)
-    except Exception as exc:
-        st.error(f"Error rendering category pie: {exc}")
+    # 3. Ward Details Table with sorting and filtering
+    render_ward_details_section(active_df)
 
 
 def render_dataset_preview(df: Optional[pd.DataFrame], df_summary: Optional[pd.DataFrame] = None):
     """
-    Renders a clean preview table of the prediction dataset.
+    Legacy wrapper delegating to the Phase 2 Ward Details section.
     """
-    display_df = df_summary if (df_summary is not None and not df_summary.empty) else df
-
-    st.markdown(
-        """
-        <div class="section-card">
-            <div class="section-card-header">
-                <div>
-                    <div class="section-card-title">
-                        <span>📋</span> Ward Demand Intelligence Data Table
-                    </div>
-                    <div class="section-card-subtitle">
-                        Comprehensive ward rankings, CPI scores, priority tiers, and forecasted complaint volumes
-                    </div>
-                </div>
-                <span class="badge badge-live">Export Ready</span>
-            </div>
-        """,
-        unsafe_allow_html=True
-    )
-
-    if display_df is not None and not display_df.empty:
-        st.dataframe(
-            display_df,
-            use_container_width=True,
-            hide_index=True
-        )
-        st.caption(f"Displaying {len(display_df):,} records. Predictions ingested from official ML pipeline.")
-    else:
-        st.info("No prediction data schema file available to preview.")
-
-    st.markdown("</div>", unsafe_allow_html=True)
+    active_df = df if df is not None and not df.empty else df_summary
+    render_ward_details_section(active_df)

@@ -113,8 +113,8 @@ def render_sidebar(data_status: Dict[str, Any]) -> str:
             """
             <div style="margin-top: 2rem; padding-top: 1rem; border-top: 1px solid var(--border-color); text-align: center;">
                 <span style="font-size: 0.72rem; color: #94A3B8;">
-                    Ward Pulse v0.1 • Hackathon Edition<br>
-                    Phase 1: Frontend Foundation
+                    Ward Pulse v0.2 • Hackathon Edition<br>
+                    Phase 2: Dashboard & Analytics
                 </span>
             </div>
             """,

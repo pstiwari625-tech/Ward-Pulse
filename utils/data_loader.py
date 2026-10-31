@@ -1,12 +1,13 @@
 """
 Ward Pulse - Data Loader Utility
 Provides modular data access, schema validation, and pipeline status detection
-for future backend ML integration.
+for Phase 2 Dashboard & Analytics.
 """
 
 from pathlib import Path
-from typing import Dict, Any, Optional, Tuple
+from typing import Dict, Any, Optional, Tuple, List
 import pandas as pd
+import numpy as np
 
 
 def get_project_root() -> Path:
@@ -17,30 +18,40 @@ def get_project_root() -> Path:
 def get_data_status() -> Dict[str, Any]:
     """
     Check the availability of prediction datasets and return current pipeline status.
-    Prioritizes official ML backend output at data/predictions/ward_predictions.csv,
-    falling back to sample schema preview at data/sample_predictions.csv.
+    Prioritizes official prediction dataset at data/predictions/ward_predictions.csv,
+    falling back to illustrative demo data at data/demo_predictions.csv.
     """
     root = get_project_root()
     official_path = root / "data" / "predictions" / "ward_predictions.csv"
+    demo_path = root / "data" / "demo_predictions.csv"
     sample_path = root / "data" / "sample_predictions.csv"
 
     if official_path.exists():
         return {
             "is_official": True,
-            "status_text": "Official ML Predictions Connected",
+            "status_text": "Official Ward Predictions Connected",
             "badge_class": "badge-live",
-            "badge_label": "Live ML Pipeline",
+            "badge_label": "Official Dataset Active",
             "file_path": str(official_path),
-            "description": "Consuming live ML model output from backend pipeline."
+            "description": "Consuming official prediction dataset from data/predictions/ward_predictions.csv."
+        }
+    elif demo_path.exists():
+        return {
+            "is_official": False,
+            "status_text": "Illustrative Demo Dataset Active — Awaiting Official Organization Dataset",
+            "badge_class": "badge-pending",
+            "badge_label": "Illustrative Demo Data",
+            "file_path": str(demo_path),
+            "description": "The actual organization's dataset has not been provided yet. Displaying illustrative demo data for Phase 2 UI verification (Not actual ML output)."
         }
     elif sample_path.exists():
         return {
             "is_official": False,
-            "status_text": "Official ML Dataset Pending — Schema Preview Active",
+            "status_text": "Schema Preview Dataset Active",
             "badge_class": "badge-pending",
-            "badge_label": "Official Dataset Pending",
+            "badge_label": "Schema Preview",
             "file_path": str(sample_path),
-            "description": "Backend ML predictions pipeline in development. Displaying UI schema preview."
+            "description": "Awaiting official dataset delivery. Displaying preview data."
         }
     else:
         return {
@@ -49,12 +60,12 @@ def get_data_status() -> Dict[str, Any]:
             "badge_class": "badge-pending",
             "badge_label": "Awaiting Data",
             "file_path": None,
-            "description": "Waiting for backend team to generate data/predictions/ward_predictions.csv."
+            "description": "Place expected prediction file at data/predictions/ward_predictions.csv."
         }
 
 
 def load_ward_summary() -> Optional[pd.DataFrame]:
-    """Load latest ward summary table containing CPI scores and priority tiers."""
+    """Load latest ward summary table containing CPI scores and priority tiers if present."""
     root = get_project_root()
     summary_path = root / "data" / "predictions" / "ward_summary_latest.csv"
     if summary_path.exists():
@@ -66,7 +77,7 @@ def load_ward_summary() -> Optional[pd.DataFrame]:
 
 
 def load_model_metrics() -> Dict[str, Any]:
-    """Load validated model metrics from models/model_metrics.json."""
+    """Load validated model metrics from models/model_metrics.json if present."""
     import json
     root = get_project_root()
     metrics_path = root / "models" / "model_metrics.json"
@@ -80,7 +91,7 @@ def load_model_metrics() -> Dict[str, Any]:
 
 
 def load_model_metadata() -> Dict[str, Any]:
-    """Load model feature importance and metadata from models/model_metadata.json."""
+    """Load model feature importance and metadata from models/model_metadata.json if present."""
     import json
     root = get_project_root()
     meta_path = root / "models" / "model_metadata.json"
@@ -94,7 +105,7 @@ def load_model_metadata() -> Dict[str, Any]:
 
 
 def load_geojson() -> Optional[Dict[str, Any]]:
-    """Load ward polygon geometries from wards.geojson."""
+    """Load ward polygon geometries from wards.geojson for geo-spatial validation."""
     import json
     root = get_project_root()
     for candidate in [root / "wards.geojson", root / "data" / "raw" / "wards.geojson"]:
@@ -107,116 +118,282 @@ def load_geojson() -> Optional[Dict[str, Any]]:
     return None
 
 
+def normalize_ward_dataframe(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Ensures the DataFrame adheres to Phase 2 expected schema:
+    - ward_id (int)
+    - ward_name (str)
+    - predicted_complaints (float/int)
+    - demand_level (str)
+    and preserves any category columns (roads, garbage, water, streetlights).
+    """
+    df = df.copy()
+
+    # 1. Normalize predicted complaints column
+    if "predicted_complaints" not in df.columns:
+        if "predicted_count" in df.columns:
+            df["predicted_complaints"] = df["predicted_count"]
+        elif "total_predicted_monthly" in df.columns:
+            df["predicted_complaints"] = df["total_predicted_monthly"]
+        elif "complaints" in df.columns:
+            df["predicted_complaints"] = df["complaints"]
+        else:
+            # Fallback to first numeric column if needed
+            numeric_cols = df.select_dtypes(include=[np.number]).columns.tolist()
+            num_candidates = [c for c in numeric_cols if c != "ward_id"]
+            if num_candidates:
+                df["predicted_complaints"] = df[num_candidates[0]]
+            else:
+                df["predicted_complaints"] = 0.0
+
+    df["predicted_complaints"] = pd.to_numeric(df["predicted_complaints"], errors="coerce").fillna(0.0)
+
+    # 2. Normalize ward_id
+    if "ward_id" in df.columns:
+        df["ward_id"] = pd.to_numeric(df["ward_id"], errors="coerce").fillna(0).astype(int)
+    else:
+        df["ward_id"] = range(1, len(df) + 1)
+
+    # 3. Normalize ward_name
+    if "ward_name" not in df.columns:
+        if "name" in df.columns:
+            df["ward_name"] = df["name"].astype(str)
+        else:
+            df["ward_name"] = df["ward_id"].apply(lambda wid: f"Ward {wid}")
+    else:
+        df["ward_name"] = df["ward_name"].astype(str)
+
+    # 4. Normalize demand_level
+    if "demand_level" not in df.columns:
+        if "demand_tier" in df.columns:
+            df["demand_level"] = df["demand_tier"].astype(str).str.title()
+        elif "priority_tier" in df.columns:
+            df["demand_level"] = df["priority_tier"].astype(str).str.title()
+        elif "cpi_score" in df.columns:
+            def cpi_to_level(score):
+                try:
+                    s = float(score)
+                    if s >= 0.70:
+                        return "Critical"
+                    elif s >= 0.45:
+                        return "High"
+                    elif s >= 0.25:
+                        return "Medium"
+                    return "Low"
+                except Exception:
+                    return "Medium"
+            df["demand_level"] = df["cpi_score"].apply(cpi_to_level)
+        else:
+            # Derive dynamically using tertiles
+            try:
+                p66 = df["predicted_complaints"].quantile(0.66)
+                p33 = df["predicted_complaints"].quantile(0.33)
+                def derive_level(val):
+                    if val >= p66:
+                        return "High"
+                    elif val >= p33:
+                        return "Medium"
+                    return "Low"
+                df["demand_level"] = df["predicted_complaints"].apply(derive_level)
+            except Exception:
+                df["demand_level"] = "Medium"
+    else:
+        df["demand_level"] = df["demand_level"].astype(str).str.title()
+
+    # 5. Normalize category columns if present
+    category_mappings = {
+        "pred_roads": "roads",
+        "pred_solid_waste": "garbage",
+        "solid_waste": "garbage",
+        "pred_electrical": "streetlights",
+        "electrical": "streetlights",
+        "water_supply": "water",
+        "pred_water": "water"
+    }
+    for old_col, new_col in category_mappings.items():
+        if old_col in df.columns and new_col not in df.columns:
+            df[new_col] = pd.to_numeric(df[old_col], errors="coerce").fillna(0.0)
+
+    for cat in ["roads", "garbage", "water", "streetlights"]:
+        if cat in df.columns:
+            df[cat] = pd.to_numeric(df[cat], errors="coerce").fillna(0.0)
+
+    return df
+
+
 def load_ward_predictions() -> Tuple[Optional[pd.DataFrame], Dict[str, Any]]:
     """
-    Load ward predictions CSV if available.
-    Supports both detailed grid (ward_predictions.csv) and summary (ward_summary_latest.csv)
-    or sample preview fallback. Normalizes column names for smooth UI rendering.
+    Load ward predictions dataset with resilient fallback:
+    1. Looks for expected official prediction file at data/predictions/ward_predictions.csv.
+       If it is the backend ML contract (ward_id, month, category_group, predicted_count),
+       it seamlessly loads the summary or aggregates to provide ward-level predictions.
+    2. If missing or invalid, falls back to separate illustrative demo file data/demo_predictions.csv.
+    3. Clearly labels whether dataset is official or illustrative demo data.
     """
+    root = get_project_root()
+    official_path = root / "data" / "predictions" / "ward_predictions.csv"
+    summary_path = root / "data" / "predictions" / "ward_summary_latest.csv"
+    demo_path = root / "data" / "demo_predictions.csv"
+
+    # Scenario 1: Official predictions file exists
+    if official_path.exists():
+        try:
+            raw_df = pd.read_csv(official_path)
+            # Check if this is the standard expected schema
+            if "predicted_complaints" in raw_df.columns or "demand_level" in raw_df.columns:
+                df = normalize_ward_dataframe(raw_df)
+                status = {
+                    "is_official": True,
+                    "status_text": "Official Ward Prediction Dataset Loaded",
+                    "badge_class": "badge-live",
+                    "badge_label": "Official Dataset Active",
+                    "file_path": str(official_path),
+                    "description": "Consuming live prediction data from data/predictions/ward_predictions.csv."
+                }
+                return df, status
+
+            # Check if companion summary file exists (backend ML output contract)
+            if summary_path.exists():
+                summary_df = pd.read_csv(summary_path)
+                df = normalize_ward_dataframe(summary_df)
+                status = {
+                    "is_official": True,
+                    "status_text": "Official Ward Prediction Dataset Loaded",
+                    "badge_class": "badge-live",
+                    "badge_label": "Official Dataset Active",
+                    "file_path": str(official_path),
+                    "description": "Consuming official ML model predictions (aggregated monthly forecast across target wards)."
+                }
+                return df, status
+
+            # If it's long format (ward_id, month, category_group, predicted_count)
+            if "predicted_count" in raw_df.columns and "ward_id" in raw_df.columns:
+                grouped = raw_df.groupby("ward_id")["predicted_count"].sum().reset_index()
+                grouped.rename(columns={"predicted_count": "predicted_complaints"}, inplace=True)
+                df = normalize_ward_dataframe(grouped)
+                status = {
+                    "is_official": True,
+                    "status_text": "Official Ward Prediction Dataset Loaded",
+                    "badge_class": "badge-live",
+                    "badge_label": "Official Dataset Active",
+                    "file_path": str(official_path),
+                    "description": "Consuming aggregated prediction counts from data/predictions/ward_predictions.csv."
+                }
+                return df, status
+        except Exception as exc:
+            pass
+
+    # Scenario 2: Fall back to separate illustrative demo file
+    if demo_path.exists():
+        try:
+            demo_df = pd.read_csv(demo_path)
+            df = normalize_ward_dataframe(demo_df)
+            status = {
+                "is_official": False,
+                "status_text": "Illustrative Demo Dataset Active — Awaiting Official Dataset",
+                "badge_class": "badge-pending",
+                "badge_label": "Illustrative Demo Data",
+                "file_path": str(demo_path),
+                "description": "The organization's actual prediction dataset has not been provided yet. Displaying illustrative demo data for Phase 2 validation (Not actual ML output)."
+            }
+            return df, status
+        except Exception as exc:
+            pass
+
+    # Scenario 3: Fall back to sample_predictions.csv
+    sample_path = root / "data" / "sample_predictions.csv"
+    if sample_path.exists():
+        try:
+            sample_df = pd.read_csv(sample_path)
+            df = normalize_ward_dataframe(sample_df)
+            status = {
+                "is_official": False,
+                "status_text": "Sample Preview Dataset Active",
+                "badge_class": "badge-pending",
+                "badge_label": "Sample Data",
+                "file_path": str(sample_path),
+                "description": "Displaying initial sample preview dataset."
+            }
+            return df, status
+        except Exception:
+            pass
+
+    # No data found
     status = get_data_status()
-    file_path = status.get("file_path")
-
-    if not file_path or not Path(file_path).exists():
-        return None, status
-
-    try:
-        df = pd.read_csv(file_path)
-
-        # Normalize column names if needed
-        if "predicted_count" in df.columns and "predicted_complaints" not in df.columns:
-            df["predicted_complaints"] = df["predicted_count"]
-        elif "total_predicted_monthly" in df.columns and "predicted_complaints" not in df.columns:
-            df["predicted_complaints"] = df["total_predicted_monthly"]
-
-        # Check required columns
-        required_cols = ["ward_id"]
-        missing_cols = [col for col in required_cols if col not in df.columns]
-
-        if missing_cols:
-            status["validation_warning"] = f"Missing expected columns: {', '.join(missing_cols)}"
-        else:
-            status["validation_warning"] = None
-
-        return df, status
-    except Exception as exc:
-        status["error"] = f"Failed to load dataset: {str(exc)}"
-        return None, status
+    return None, status
 
 
 def get_kpi_metrics(df: Optional[pd.DataFrame], df_summary: Optional[pd.DataFrame] = None) -> Dict[str, Any]:
     """
     Extract high-level metrics for dashboard KPI cards.
-    Gracefully calculates real metrics when live backend data is connected.
+    All values are dynamically calculated from the loaded dataset:
+    - Total wards.
+    - Total predicted complaints.
+    - High-demand wards.
+    - Average predicted complaints per ward.
     """
-    if df_summary is not None and not df_summary.empty:
-        try:
-            total_wards = len(df_summary)
-            critical_wards = int((df_summary["priority_tier"] == "CRITICAL").sum()) if "priority_tier" in df_summary.columns else 0
-            mean_monthly = round(float(df_summary["total_predicted_monthly"].mean()), 1) if "total_predicted_monthly" in df_summary.columns else 0
-            
-            # Find peak demand ward
-            if "total_predicted_monthly" in df_summary.columns:
-                max_idx = df_summary["total_predicted_monthly"].idxmax()
-                ward_name = df_summary.loc[max_idx, "ward_name"] if "ward_name" in df_summary.columns else f"Ward {df_summary.loc[max_idx, 'ward_id']}"
-                highest_demand_str = f"{ward_name} ({round(float(df_summary.loc[max_idx, 'total_predicted_monthly']), 1)})"
-            else:
-                highest_demand_str = "--"
+    active_df = df if df is not None and not df.empty else df_summary
 
-            metrics_info = load_model_metrics()
-            oof_mae = metrics_info.get("metrics", {}).get("oof_mae", 6.84)
-
-            return {
-                "total_wards": str(total_wards),
-                "critical_wards": str(critical_wards),
-                "total_predicted_complaints": f"{int(df_summary['total_predicted_monthly'].sum()):,}" if "total_predicted_monthly" in df_summary.columns else "--",
-                "avg_complaints_per_ward": str(mean_monthly),
-                "highest_demand_ward": highest_demand_str,
-                "model_mae": str(oof_mae),
-                "data_source_mode": "Official ML Predictions"
-            }
-        except Exception:
-            pass
-
-    if df is None or df.empty:
+    if active_df is None or active_df.empty or "predicted_complaints" not in active_df.columns:
         return {
             "total_wards": "--",
-            "critical_wards": "--",
             "total_predicted_complaints": "--",
-            "avg_complaints_per_ward": "--",
+            "high_demand_wards": "--",
+            "avg_predicted_complaints": "--",
             "highest_demand_ward": "--",
-            "model_mae": "--",
+            "raw_total_wards": 0,
+            "raw_total_complaints": 0,
+            "raw_high_demand_count": 0,
+            "raw_avg_complaints": 0.0,
             "data_source_mode": "No Data Connected"
         }
 
     try:
-        col = "predicted_complaints" if "predicted_complaints" in df.columns else ("predicted_count" if "predicted_count" in df.columns else None)
-        total_wards = len(df["ward_id"].unique()) if "ward_id" in df.columns else len(df)
-        total_complaints = int(df[col].sum()) if col else 0
-        avg_complaints = round(df[col].mean(), 1) if col else 0
+        total_wards = int(active_df["ward_id"].nunique() if "ward_id" in active_df.columns else len(active_df))
+        total_complaints = float(active_df["predicted_complaints"].sum())
+        avg_complaints = round(float(active_df["predicted_complaints"].mean()), 1) if total_wards > 0 else 0.0
 
-        highest_demand_str = "--"
-        if col:
-            max_idx = df[col].idxmax()
-            highest_ward_id = df.loc[max_idx, "ward_id"] if "ward_id" in df.columns else "N/A"
-            ward_name = df.loc[max_idx, "ward_name"] if "ward_name" in df.columns else f"Ward {highest_ward_id}"
-            highest_demand_str = f"{ward_name} ({round(float(df.loc[max_idx, col]), 1)})"
+        # Calculate high-demand wards dynamically
+        if "demand_level" in active_df.columns:
+            high_mask = active_df["demand_level"].astype(str).str.strip().str.title().isin(["High", "Critical"])
+            high_demand_count = int(high_mask.sum())
+        elif "demand_tier" in active_df.columns:
+            high_mask = active_df["demand_tier"].astype(str).str.strip().str.title().isin(["High", "Critical"])
+            high_demand_count = int(high_mask.sum())
+        else:
+            p75 = active_df["predicted_complaints"].quantile(0.75)
+            high_demand_count = int((active_df["predicted_complaints"] >= p75).sum())
+
+        pct_high = round((high_demand_count / max(1, total_wards)) * 100, 1)
+        high_demand_str = f"{high_demand_count} Wards ({pct_high}%)"
+
+        # Determine peak demand ward
+        max_idx = active_df["predicted_complaints"].idxmax()
+        ward_name = active_df.loc[max_idx, "ward_name"] if "ward_name" in active_df.columns else f"Ward {active_df.loc[max_idx, 'ward_id']}"
+        highest_demand_str = f"{ward_name} ({round(float(active_df.loc[max_idx, 'predicted_complaints']), 1)})"
 
         return {
-            "total_wards": str(total_wards),
-            "critical_wards": "--",
-            "total_predicted_complaints": f"{total_complaints:,}",
-            "avg_complaints_per_ward": str(avg_complaints),
+            "total_wards": f"{total_wards:,}",
+            "total_predicted_complaints": f"{int(round(total_complaints)):,}",
+            "high_demand_wards": high_demand_str,
+            "avg_predicted_complaints": f"{avg_complaints:,.1f}",
             "highest_demand_ward": highest_demand_str,
-            "model_mae": "6.84",
-            "data_source_mode": "Placeholder / Sample Data"
+            "raw_total_wards": total_wards,
+            "raw_total_complaints": total_complaints,
+            "raw_high_demand_count": high_demand_count,
+            "raw_avg_complaints": avg_complaints,
+            "data_source_mode": "Dynamic Ingestion"
         }
-    except Exception:
+    except Exception as exc:
         return {
             "total_wards": "--",
-            "critical_wards": "--",
             "total_predicted_complaints": "--",
-            "avg_complaints_per_ward": "--",
+            "high_demand_wards": "--",
+            "avg_predicted_complaints": "--",
             "highest_demand_ward": "--",
-            "model_mae": "--",
-            "data_source_mode": "Error parsing metrics"
+            "raw_total_wards": 0,
+            "raw_total_complaints": 0,
+            "raw_high_demand_count": 0,
+            "raw_avg_complaints": 0.0,
+            "data_source_mode": f"Error calculating metrics: {exc}"
         }
