@@ -1,32 +1,90 @@
 """
 Ward Pulse: Backend Feature Engineering Layer
-Builds spatial lag features, density ratios, and cyclical harmonic calendar encodings.
+Builds planar UTM coordinates, candidate asset exposures, and log-transformed covariates.
+Strictly grounded in columns present in ward_features.csv.
 """
 
 import math
-from typing import Dict, Any
+from typing import Dict, Any, List, Tuple
+import config
 
-def compute_cyclical_time_features(month_str: str) -> Dict[str, float]:
+def to_utm43n_approx_km(lat: float, lon: float) -> Tuple[float, float]:
     """
-    Computes sine and cosine harmonic features for a given YYYY-MM string.
-    Ensures seamless continuity between December and January.
+    Projects WGS84 (lat, lon) to local planar coordinates in kilometers
+    centered near Bengaluru (13.0°N, 77.6°E).
     """
-    month_int = int(month_str.split("-")[1])
-    radians = 2.0 * math.pi * (month_int - 1) / 12.0
+    dlat_km = (lat - 13.0) * 110.574
+    dlon_km = (lon - 77.6) * 111.320 * math.cos(math.radians(13.0))
+    return dlon_km, dlat_km
+
+def extract_ward_feature_vector(row: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Extracts cleaned numeric values and 14 log-transformed covariates
+    from a single ward_features record.
+    """
+    lat = float(row.get("centroid_lat", 13.0))
+    lon = float(row.get("centroid_lon", 77.6))
+    x_km, y_km = to_utm43n_approx_km(lat, lon)
+
+    pop = float(row.get("population_2011", 40000.0))
+    hh = float(row.get("households_census_2011", 10000.0))
+    road_len = float(row.get("road_length_kms", 50.0))
+    streetlights = float(row.get("streetlights", 2000.0))
+    area = float(row.get("area_sq_km", 3.0))
+    parks = float(row.get("parks", 5.0))
+    park_area = float(row.get("park_area_sq_m", 10000.0))
+    playgrounds = float(row.get("playgrounds", 1.0))
+    schools = float(row.get("govt_schools", 4.0))
+    bus_stops = float(row.get("bus_stops", 20.0))
+    bus_routes = float(row.get("bus_routes", 50.0))
+    density = float(row.get("population_density_2011_persons_sq_km", 10000.0))
+    growth_pop = float(row.get("decadal_popn_growth_rate_2011_2001", 0.5))
+    growth_hh = float(row.get("decadal_households_growth_rate_2011_2001", 0.6))
+
+    # 14 log-transformed covariates
+    features = [
+        math.log(pop + 1.0),
+        math.log(hh + 1.0),
+        math.log(road_len + 1.0),
+        math.log(streetlights + 1.0),
+        math.log(area + 1.0),
+        math.log(parks + 1.0),
+        math.log(park_area + 1.0),
+        math.log(playgrounds + 1.0),
+        math.log(schools + 1.0),
+        math.log(bus_stops + 1.0),
+        math.log(bus_routes + 1.0),
+        density / 10000.0,
+        growth_pop,
+        growth_hh
+    ]
+
     return {
-        "sin_month": round(math.sin(radians), 4),
-        "cos_month": round(math.cos(radians), 4),
-        "is_monsoon": 1.0 if month_int in [6, 7, 8, 9] else 0.0,
+        "x": x_km,
+        "y": y_km,
+        "features": features,
+        "raw": {
+            "population_2011": pop,
+            "households_census_2011": hh,
+            "road_length_kms": road_len,
+            "streetlights": streetlights,
+            "area_sq_km": area,
+            "parks": parks,
+            "park_area_sq_m": park_area,
+            "playgrounds": playgrounds,
+            "govt_schools": schools,
+            "bus_stops": bus_stops,
+            "bus_routes": bus_routes,
+            "population_density_2011_persons_sq_km": density,
+            "decadal_popn_growth_rate_2011_2001": growth_pop,
+            "decadal_households_growth_rate_2011_2001": growth_hh,
+            "ward_name": row.get("ward_name", ""),
+            "zone": row.get("bbmp_zone_name", "Unknown"),
+        }
     }
 
-def compute_density_ratios(features: Dict[str, Any]) -> Dict[str, float]:
-    """Computes area and population-normalized infrastructure ratios."""
-    area = max(features.get("area_sq_km", 1.0), 0.1)
-    pop = max(features.get("population_2011", 1000.0), 100.0)
-
-    return {
-        "road_density_km_per_sq_km": features.get("road_length_kms", 0.0) / area,
-        "streetlight_density_per_km": features.get("streetlights", 0.0) / max(features.get("road_length_kms", 1.0), 0.1),
-        "bus_stop_density_per_sq_km": features.get("bus_stops", 0.0) / area,
-        "school_density_per_10k_pop": (features.get("govt_schools", 0.0) / pop) * 10000.0,
-    }
+def get_exposure_value(ward_data: Dict[str, Any], category: str) -> float:
+    """Returns the category-specific asset exposure for a ward."""
+    col_name = config.CATEGORY_EXPOSURE_MAP.get(category, "population_2011")
+    val = ward_data["raw"].get(col_name, 1.0)
+    return max(1.0, float(val))

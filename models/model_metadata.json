@@ -1,19 +1,24 @@
 {
   "features_used": [
-    "population_2011",
-    "area_sq_km",
-    "road_length_kms",
-    "streetlights",
-    "neighbor_mean_complaints",
-    "sin_month",
-    "cos_month"
+    "log(pop+1)",
+    "log(hh+1)",
+    "log(road_len+1)",
+    "log(streetlights+1)",
+    "log(area+1)",
+    "log(parks+1)",
+    "log(park_area+1)",
+    "log(playgrounds+1)",
+    "log(schools+1)",
+    "log(bus_stops+1)",
+    "log(bus_routes+1)",
+    "population_density",
+    "decadal_growth_pop",
+    "decadal_growth_hh"
   ],
-  "top_feature_importances": {
-    "population_2011": 0.28,
-    "neighbor_mean_complaints": 0.22,
-    "road_length_kms": 0.16,
-    "category_code": 0.14,
-    "streetlights": 0.11
+  "kernel_parameters": {
+    "bandwidth_km": 3.5,
+    "kernel_type": "Gaussian_RBF",
+    "distance_metric": "UTM_Zone_43N_Planar_Euclidean"
   },
   "target_wards_count": 40,
   "total_evaluated_records": 4320

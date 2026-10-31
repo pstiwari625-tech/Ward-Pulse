@@ -1,15 +1,67 @@
 {
-  "model_name": "HistGradientBoostingRegressor_Poisson",
-  "validation_strategy": "5-Fold Spatial GroupKFold",
-  "metrics": {
-    "oof_mae": 6.84,
-    "oof_rmse": 11.23,
-    "oof_r2": 0.58,
-    "oof_mean_poisson_deviance": 3.42
+  "model_name": "WardTotal_PulseShape_KernelKriging",
+  "validation_strategy": "Leave-One-Ward-Out (LOWO) Spatial CV (156 folds)",
+  "evaluation_window": "2024-01 to 2025-06 (18 months)",
+  "baseline_anchor": {
+    "name": "Ratio_of_Sums_Exposure_Anchor",
+    "oof_mae": 8.65,
+    "oof_rmse": 16.18
   },
-  "baseline_metrics": {
-    "zone_category_median_mae": 11.5,
-    "zone_category_median_rmse": 18.9,
-    "zone_category_median_r2": 0.08
+  "metrics": {
+    "oof_mae": 6.636,
+    "oof_rmse": 13.878,
+    "oof_wape_pct": 46.64
+  },
+  "category_metrics": {
+    "animals_health": {
+      "mae": 3.601,
+      "rmse": 7.123,
+      "wape_pct": 45.02,
+      "mean_volume": 8.0
+    },
+    "electrical": {
+      "mae": 11.77,
+      "rmse": 18.601,
+      "wape_pct": 39.55,
+      "mean_volume": 29.76
+    },
+    "other": {
+      "mae": 3.148,
+      "rmse": 5.476,
+      "wape_pct": 47.06,
+      "mean_volume": 6.69
+    },
+    "roads": {
+      "mae": 5.686,
+      "rmse": 13.429,
+      "wape_pct": 46.45,
+      "mean_volume": 12.24
+    },
+    "solid_waste": {
+      "mae": 12.756,
+      "rmse": 22.773,
+      "wape_pct": 53.39,
+      "mean_volume": 23.89
+    },
+    "trees": {
+      "mae": 2.856,
+      "rmse": 5.474,
+      "wape_pct": 59.72,
+      "mean_volume": 4.78
+    }
+  },
+  "ward_distribution": {
+    "min_mae": 1.35,
+    "q10_mae": 2.66,
+    "q25_mae": 3.3,
+    "median_mae": 4.83,
+    "q75_mae": 7.49,
+    "q90_mae": 13.3,
+    "max_mae": 29.98
+  },
+  "sensitivity_audit": {
+    "mean_kendall_tau": 0.944,
+    "stable_wards_count": 30,
+    "borderline_wards_count": 10
   }
 }

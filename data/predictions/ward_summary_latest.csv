@@ -1,41 +1,41 @@
-ward_id,ward_name,zone,total_predicted_monthly,cpi_score,priority_tier,pred_animals_health,pred_electrical,pred_other,pred_roads,pred_solid_waste,pred_trees
-5,Jakkuru,Yelahanka,92.21,0.5388,HIGH,6.63,37.07,5.85,14.83,23.67,4.16
-6,Thanisandra,Yelahanka,127.36,0.6948,HIGH,9.16,51.2,8.08,20.48,32.69,5.75
-12,Shettihalli,Dasarahalli,108.26,0.6582,HIGH,7.79,43.51,6.87,17.41,27.79,4.89
-15,T Dasarahalli,Dasarahalli,58.56,0.577,HIGH,4.21,23.54,3.72,9.42,15.03,2.64
-27,Banasavadi,East,90.88,0.5859,HIGH,6.54,36.53,5.77,14.61,23.33,4.1
-33,Manorayana Palya,East,84.95,0.7041,CRITICAL,6.11,34.15,5.39,13.66,21.81,3.83
-60,Sagayara Puram,East,62.65,0.5776,HIGH,4.51,25.18,3.98,10.07,16.08,2.83
-66,Subramanya Nagar,West,63.3,0.5494,HIGH,4.55,25.44,4.02,10.18,16.25,2.86
-72,Herohalli,Rajarajeshwari,110.38,0.6623,HIGH,7.94,44.37,7.01,17.75,28.33,4.98
-74,Shakthi Ganapathi Nagar,West,77.72,0.6721,HIGH,5.59,31.24,4.93,12.5,19.95,3.51
-77,Dattatreya Temple Ward,West,59.19,0.5453,HIGH,4.26,23.79,3.76,9.52,15.19,2.67
-79,Sarvagna Nagar,East,66.1,0.4133,MEDIUM,4.75,26.57,4.2,10.63,16.97,2.98
-82,Garudachar palya,Mahadevapura,87.96,0.5678,HIGH,6.33,35.36,5.58,14.14,22.58,3.97
-85,Dodda Nekkundi,Mahadevapura,111.82,0.642,HIGH,8.04,44.95,7.1,17.98,28.7,5.05
-88,Jeevanbhima Nagar,East,67.79,0.4693,HIGH,4.88,27.25,4.3,10.9,17.4,3.06
-89,Jogupalya,East,59.9,0.5192,HIGH,4.31,24.08,3.8,9.63,15.38,2.7
-100,Basaveshwara Nagar,West,53.76,0.5326,HIGH,3.87,21.61,3.41,8.64,13.8,2.43
-111,Shantala Nagar,East,40.75,0.2649,MEDIUM,2.93,16.38,2.59,6.55,10.46,1.84
-115,Vannar Pet,East,65.69,0.5951,HIGH,4.73,26.41,4.17,10.56,16.86,2.96
-117,Shanthi Nagar,East,74.62,0.4904,HIGH,5.37,29.99,4.74,12.0,19.15,3.37
-118,Sudham Nagar,South,51.02,0.4503,HIGH,3.67,20.51,3.24,8.2,13.1,2.3
-122,Kempapura Agrahara,South,70.94,0.6438,HIGH,5.1,28.52,4.5,11.41,18.21,3.2
-126,Maruthi Mandir Ward,South,51.98,0.5512,HIGH,3.74,20.89,3.3,8.36,13.34,2.35
-128,Nagarabhavi,South,63.42,0.5515,HIGH,4.56,25.49,4.03,10.2,16.28,2.86
-129,Jnana Bharathi Ward,Rajarajeshwari,120.76,0.66,HIGH,8.69,48.54,7.66,19.42,31.0,5.45
-130,Ullalu,Rajarajeshwari,103.17,0.5994,HIGH,7.42,41.47,6.55,16.59,26.48,4.66
-132,Attiguppe,South,73.54,0.6117,HIGH,5.29,29.56,4.67,11.82,18.88,3.32
-138,Chelavadi Palya,West,43.95,0.5094,HIGH,3.16,17.67,2.79,7.07,11.28,1.98
-139,KR Market,West,52.01,0.512,HIGH,3.74,20.91,3.3,8.36,13.35,2.35
-141,Azad Nagar,West,68.83,0.6074,HIGH,4.95,27.66,4.37,11.07,17.67,3.11
-146,Lakkasandra,South,54.35,0.451,HIGH,3.91,21.85,3.45,8.74,13.95,2.45
-149,Varthur,Mahadevapura,96.82,0.5831,HIGH,6.96,38.92,6.15,15.57,24.85,4.37
-152,Suddagunte Palya,South,70.9,0.5067,HIGH,5.1,28.5,4.5,11.4,18.2,3.2
-164,Vidya Peeta Ward,South,77.06,0.6267,HIGH,5.54,30.98,4.89,12.39,19.78,3.48
-169,Byra Sandra,South,56.85,0.5193,HIGH,4.09,22.85,3.61,9.14,14.59,2.57
-174,HSR Layout,Bommanahalli,111.72,0.6494,HIGH,8.04,44.91,7.09,17.96,28.68,5.04
-176,BTM Layout,South,92.61,0.6464,HIGH,6.66,37.23,5.88,14.89,23.77,4.18
-182,Padmanabha Nagar,South,72.74,0.5932,HIGH,5.23,29.24,4.62,11.7,18.67,3.28
-184,Uttarahalli,Bommanahalli,101.4,0.5841,HIGH,7.29,40.76,6.44,16.3,26.03,4.58
-193,Arakere,Bommanahalli,103.43,0.6279,HIGH,7.44,41.58,6.56,16.63,26.55,4.67
+ward_id,ward_name,zone,total_predicted_monthly,cpi_score,priority_tier,equity_cpi_score,equity_tier,rank_flip_prob,pred_animals_health,pred_electrical,pred_other,pred_roads,pred_solid_waste,pred_trees
+5,Jakkuru,Yelahanka,306.42,0.681,HIGH,0.449,MEDIUM,0.29,23.01,140.98,21.44,40.28,73.76,6.96
+6,Thanisandra,Yelahanka,268.65,0.724,CRITICAL,0.528,HIGH,0.16,23.04,101.62,20.25,42.74,73.47,7.53
+12,Shettihalli,Dasarahalli,116.93,0.591,HIGH,0.446,MEDIUM,0.0,10.17,51.86,9.52,15.34,25.99,4.06
+15,T Dasarahalli,Dasarahalli,35.05,0.459,HIGH,0.506,HIGH,0.33,2.82,11.9,3.12,6.47,9.74,1.0
+27,Banasavadi,East,126.8,0.601,HIGH,0.475,HIGH,0.0,10.76,47.42,9.08,16.9,35.53,7.11
+33,Manorayana Palya,East,36.03,0.508,HIGH,0.597,HIGH,0.0,2.76,16.86,1.95,4.51,8.98,0.97
+60,Sagayara Puram,East,31.5,0.404,MEDIUM,0.4,MEDIUM,0.0,2.61,12.89,2.18,4.38,7.81,1.62
+66,Subramanya Nagar,West,32.14,0.359,MEDIUM,0.362,MEDIUM,0.0,3.04,13.02,2.36,3.87,7.41,2.45
+72,Herohalli,Rajarajeshwari,154.64,0.673,HIGH,0.514,HIGH,0.06,14.7,59.62,15.0,20.59,33.0,11.72
+74,Shakthi Ganapathi Nagar,West,24.56,0.444,MEDIUM,0.45,HIGH,0.38,2.05,12.13,1.56,2.39,5.0,1.43
+77,Dattatreya Temple Ward,West,29.41,0.321,MEDIUM,0.344,MEDIUM,0.0,2.96,10.48,2.29,4.48,7.86,1.33
+79,Sarvagna Nagar,East,55.04,0.476,HIGH,0.404,MEDIUM,0.0,6.18,15.87,4.9,9.8,15.94,2.35
+82,Garudachar palya,Mahadevapura,95.55,0.485,HIGH,0.361,MEDIUM,0.01,14.01,24.67,8.83,17.99,28.32,1.73
+85,Dodda Nekkundi,Mahadevapura,195.1,0.597,HIGH,0.426,MEDIUM,0.0,29.75,49.09,20.24,33.07,55.68,7.29
+88,Jeevanbhima Nagar,East,56.44,0.451,HIGH,0.38,MEDIUM,0.33,7.08,16.44,4.34,8.88,17.25,2.45
+89,Jogupalya,East,39.31,0.388,MEDIUM,0.469,HIGH,0.0,4.21,12.97,2.59,6.11,11.42,2.01
+100,Basaveshwara Nagar,West,25.51,0.338,MEDIUM,0.34,MEDIUM,0.0,2.38,10.36,1.88,3.21,5.43,2.25
+111,Shantala Nagar,East,76.15,0.392,MEDIUM,0.258,MEDIUM,0.0,7.39,23.41,7.68,11.47,18.5,7.7
+115,Vannar Pet,East,39.27,0.532,HIGH,0.546,HIGH,0.0,3.34,16.06,2.61,4.29,9.12,3.84
+117,Shanthi Nagar,East,50.33,0.469,HIGH,0.4,MEDIUM,0.0,5.62,16.18,4.21,7.91,13.81,2.61
+118,Sudham Nagar,South,38.01,0.345,MEDIUM,0.343,MEDIUM,0.0,4.0,10.16,3.36,6.68,12.12,1.68
+122,Kempapura Agrahara,South,11.2,0.435,MEDIUM,0.435,MEDIUM,0.29,1.07,5.54,0.67,1.08,2.62,0.21
+126,Maruthi Mandir Ward,South,31.98,0.379,MEDIUM,0.386,MEDIUM,0.0,3.19,10.39,2.63,4.16,8.64,2.97
+128,Nagarabhavi,South,61.12,0.479,HIGH,0.392,MEDIUM,0.0,5.06,22.72,4.69,7.37,14.33,6.94
+129,Jnana Bharathi Ward,Rajarajeshwari,258.82,0.65,HIGH,0.441,MEDIUM,0.0,24.23,94.43,25.98,34.15,58.2,21.82
+130,Ullalu,Rajarajeshwari,219.37,0.678,HIGH,0.493,HIGH,0.19,18.44,88.33,19.09,27.86,48.08,17.57
+132,Attiguppe,South,68.36,0.536,HIGH,0.463,HIGH,0.0,5.45,23.35,5.16,6.55,15.89,11.96
+138,Chelavadi Palya,West,22.95,0.364,MEDIUM,0.369,MEDIUM,0.0,1.88,7.48,2.0,4.33,6.61,0.64
+139,KR Market,West,32.14,0.369,MEDIUM,0.366,MEDIUM,0.0,3.2,9.57,2.87,5.77,9.49,1.25
+141,Azad Nagar,West,28.32,0.395,MEDIUM,0.428,MEDIUM,0.0,2.62,10.89,1.98,3.53,7.81,1.49
+146,Lakkasandra,South,42.86,0.429,MEDIUM,0.376,MEDIUM,0.0,4.48,12.27,3.58,6.33,13.08,3.12
+149,Varthur,Mahadevapura,189.2,0.576,HIGH,0.393,MEDIUM,0.0,26.31,44.48,20.24,46.1,50.99,1.07
+152,Suddagunte Palya,South,49.17,0.421,MEDIUM,0.373,MEDIUM,0.0,5.7,15.29,3.75,7.43,14.73,2.28
+164,Vidya Peeta Ward,South,60.56,0.535,HIGH,0.492,HIGH,0.0,4.7,22.17,4.03,6.4,17.25,6.01
+169,Byra Sandra,South,34.8,0.349,MEDIUM,0.365,MEDIUM,0.0,3.5,11.2,2.39,4.72,11.13,1.86
+174,HSR Layout,Bommanahalli,197.61,0.65,HIGH,0.484,HIGH,0.0,24.38,70.06,17.15,29.58,42.9,13.54
+176,BTM Layout,South,95.18,0.597,HIGH,0.54,HIGH,0.0,9.59,32.35,7.21,12.92,25.42,7.69
+182,Padmanabha Nagar,South,77.23,0.599,HIGH,0.552,HIGH,0.0,5.93,25.74,5.43,9.11,21.95,9.07
+184,Uttarahalli,Bommanahalli,263.71,0.668,HIGH,0.474,HIGH,0.08,19.98,97.87,20.02,30.85,74.4,20.58
+193,Arakere,Bommanahalli,199.41,0.653,HIGH,0.494,HIGH,0.0,18.5,74.41,15.0,29.44,52.91,9.15

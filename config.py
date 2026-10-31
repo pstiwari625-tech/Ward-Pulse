@@ -7,8 +7,6 @@ from pathlib import Path
 
 # Base Paths
 BASE_DIR = Path(__file__).resolve().parent
-
-# Check for raw files in data/raw or root
 DATA_DIR = BASE_DIR / "data"
 RAW_DATA_DIR = DATA_DIR / "raw" if (DATA_DIR / "raw").exists() else BASE_DIR
 PROCESSED_DATA_DIR = DATA_DIR / "processed"
@@ -34,6 +32,9 @@ MODEL_METRICS_FILE = MODELS_DIR / "model_metrics.json"
 MODEL_METADATA_FILE = MODELS_DIR / "model_metadata.json"
 CHAMPION_MODEL_FILE = MODELS_DIR / "champion_regressor.joblib"
 
+# 18-Month Target Evaluation Window
+TARGET_MONTHS = [f"2024-{m:02d}" for m in range(1, 13)] + [f"2025-{m:02d}" for m in range(1, 7)]
+
 # Categories
 CATEGORIES = [
     "animals_health",
@@ -44,11 +45,24 @@ CATEGORIES = [
     "trees",
 ]
 
-# Civic Priority Index (CPI) Multi-Criteria Weights
-CPI_WEIGHT_PREDICTED_DEMAND = 0.50
-CPI_WEIGHT_POPULATION_DENSITY = 0.25
+# Physical Asset Exposure Map (Strictly using validated columns)
+CATEGORY_EXPOSURE_MAP = {
+    "electrical": "streetlights",
+    "roads": "road_length_kms",
+    "solid_waste": "households_census_2011",
+    "trees": "parks",
+    "animals_health": "population_2011",
+    "other": "population_2011",
+}
+
+# Spatial Kernel Bandwidths (km) for grid search
+KERNEL_BANDWIDTHS = [1.5, 2.0, 2.5, 3.5, 5.0]
+
+# CPI Multi-Criteria Policy Weights (Percentile Rank Form)
+CPI_WEIGHT_PREDICTED_DEMAND = 0.40
+CPI_WEIGHT_POPULATION_DENSITY = 0.30
 CPI_WEIGHT_GROWTH_RATE = 0.15
-CPI_WEIGHT_INFRA_DEFICIT = 0.10
+CPI_WEIGHT_INFRA_DEFICIT = 0.15
 
 # Reproducibility
 RANDOM_SEED = 42

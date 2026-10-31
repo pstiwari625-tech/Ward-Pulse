@@ -1,262 +1,148 @@
 # WARD PULSE: System Architecture & Technical Implementation Blueprint
 **Civic-Demand Intelligence & Ward-Level Prediction Platform**  
-*Document Version:* 1.0.0-PROD  
-*Target Environment:* Municipal Hackathon (Lucknow, India) / Local Execution  
-*Evaluation Scope:* Technical Jury & Production-Readiness Assessment
+*Document Version:* 2.0.0-PROD  
+*Target Environment:* Municipal Decision Support / Local Execution  
+*Evaluation Protocol:* Leave-One-Ward-Out (LOWO) Spatial Cross-Validation (156 Folds)
 
 ---
 
-## 1. Executive Architecture Overview
+## 1. Executive Summary & Problem Formulation
 
-**Ward Pulse** is an offline-capable, spatio-temporal civic demand intelligence and decision-support system. It addresses municipal resource misallocation across city wards by quantifying and predicting localized civic grievances.
+**Ward Pulse** is an offline-capable, spatio-temporal municipal demand intelligence system designed to help city administrators proactively anticipate civic grievances across urban wards.
 
-### Architectural Reality Check
-Analysis of the raw data reveals that **Ward Pulse is not a standard auto-regressive time-series forecasting problem**, but an **inductive spatio-temporal transfer problem**:
-1. **The Disjoint Partition:** The dataset provides historical complaint records for **156 wards** (Feb 2020 – Jun 2025), while the target inference set consists of **40 completely unobserved target wards** over an 18-month horizon (Jan 2024 – Jun 2025). Target wards have **zero historical complaint records**.
-2. **The Core ML Task:** The model must learn an inductive mapping from **static ward-level urban infrastructure, demographic features, spatial contiguity, and macro seasonal cycles** to ward-level monthly complaint volume across 6 civic categories (`electrical`, `solid_waste`, `roads`, `animals_health`, `trees`, `other`).
-3. **Decoupled Scoring vs. Prediction:** The system strictly separates:
-   * **Trained ML Predictions:** Statistically learned expected complaint counts per ward, month, and category.
-   * **Civic Priority Index (CPI):** A transparent, deterministic, multi-criteria heuristic score combining predicted grievance pressure with infrastructural density and socio-demographic vulnerability. Heuristic scores are **never** obfuscated as ML predictions.
-
-The architecture enforces a strict **unidirectional, file-contract-driven pipeline**: Backend ML outputs static, schema-validated artifacts (`ward_predictions.csv`, `model_metrics.json`, `model_metadata.json`), which a decoupled Streamlit frontend ingests asynchronously.
+### The True Machine Learning Formulation
+1. **Spatial Imputation with Shared Contemporaneous Time:**  
+   The dataset contains 198 total wards. Historical complaints are available for **156 training wards** through June 2025. The test set comprises **40 completely unobserved target wards** over an 18-month window (**January 2024 to June 2025**). Because the 156 training wards are observed during the *exact same 18 months*, city-wide macro dynamics (monsoons, portal updates, reporting surges) are known contemporaneously.
+2. **Effective Sample Size:**  
+   Because static ward attributes are cross-sectional ($N = 156$), deep or unconstrained gradient boosted trees overfit rapidly. The architecture solves this by modeling **18-month ward totals** using regularized log-linear models + in-fold Gaussian spatial residual kriging, then allocating volume temporally via the observed category pulse shape.
+3. **Decoupled Governance:**  
+   Supervised ML forecasts ($\widehat{y}_{w, t, c}$) are strictly decoupled from policy decision heuristics (the Civic Priority Index, CPI).
 
 ---
 
-## 2. Dataset Feasibility Assessment
+## 2. Empirical Data Audit & Target Geometry
 
-An exhaustive audit of the project workspace (`p3-ward-civic-demand`) yields the following empirical findings:
+### 2.1 Spatial Interleaving Audit (Projected UTM Zone 43N)
+Coordinate distances between the 40 target wards and the 156 training wards were computed using planar UTM 43N projection ($13^\circ\text{N}, 77.6^\circ\text{E}$):
+* **Minimum Distance:** $0.352\text{ km}$ ($352$ meters)
+* **25th Percentile:** $0.723\text{ km}$
+* **Median Distance:** $1.029\text{ km}$
+* **75th Percentile:** $1.844\text{ km}$
+* **Maximum Distance:** $2.878\text{ km}$
 
-```
-Total Files Audited: 6
-├── README.md                      (1,016 B)
-├── grievances_public_wards.csv    (51.15 MB, 556,561 records)
-├── ward_features.csv              (42.11 KB, 198 ward records)
-├── wards.geojson                  (995.38 KB, 198 polygon features)
-├── prediction_grid_template.csv   (90.25 KB, 4,320 target rows)
-└── sample_submission.csv          (191 B, schema template)
-```
+The 40 target wards are **stratified across all 8 zones** (South: $27.5\%$ target vs. $26.9\%$ train; East: $22.5\%$ vs. $22.4\%$; West: $17.5\%$ vs. $17.3\%$, etc.). Target wards are interleaved within $\sim 1\text{ km}$ of training wards, making **spatial residual kriging** exceptionally effective.
 
-```
-┌────────────────────────────────────────────────────────────────────────────────────────┐
-│                                 198 TOTAL WARDS                                        │
-│ ┌───────────────────────────────────────┐  ┌───────────────────────┐  ┌──────────────┐ │
-│ │          156 TRAINING WARDS           │  │    40 TARGET WARDS     │  │   2 EXCLUDED │ │
-│ │  (556,561 Historical Complaints,     │  │ (Zero History in Train,│  │  (Wards 3 &   │ │
-│ │   Feb 2020 – Jun 2025)                │  │  18-Month Pred Grid)   │  │   65)        │ │
-│ └───────────────────────────────────────┘  └───────────────────────┘  └──────────────┘ │
-│                                                                                        │
-│ Polygon Geometries in wards.geojson: 198 / 198 (100% Matched)                          │
-│ Static Attributes in ward_features.csv: 198 / 198 (100% Matched)                       │
-└────────────────────────────────────────────────────────────────────────────────────────┘
-```
-
-### 2.1 File Inventory & Integrity Audit
-1. **`grievances_public_wards.csv`:**
-   * **Row Count:** 556,561 rows.
-   * **Columns (7):** `complaint_id` (int64), `category_group` (object), `category_raw` (object), `sub_category` (object), `grievance_time` (string: `YYYY-MM-DD HH:MM:SS`), `ward_id` (int64), `status` (object).
-   * **Temporal Span:** `2020-02-08 01:01:00` to `2025-06-19 12:59:00` (65 contiguous calendar months).
-   * **Ward Distribution:** Exactly 156 unique `ward_id`s.
-
-2. **`ward_features.csv`:**
-   * **Row Count:** 198 rows (1 per ward).
-   * **Columns (30):** Structural census and infrastructure indicators: `ward_id`, `ward_name`, `bbmp_zone_name`, `assembly_constituency_name`, `mp_constituency`, `population_2011`, `area_sq_km`, `households_census_2011`, `road_length_kms`, `lakes`, `lake_area_sq_m`, `parks`, `park_area_sq_m`, `playgrounds`, `playground_area_sq_m`, `govt_schools`, `police_stations`, `fire_stations`, `bus_stops`, `bmtc_ttmc`, `streetlights`, `police_stn`, `bbmp_division`, `bbmp_sub_division`, `population_density_2011_persons_sq_km`, `decadal_popn_growth_rate_2011_2001`, `decadal_households_growth_rate_2011_2001`, `bus_routes`, `centroid_lon`, `centroid_lat`.
-
-3. **`wards.geojson`:**
-   * **Features:** 198 Polygon/MultiPolygon records matching `properties.ward_id` in [1, 198]. WGS84 CRS (`EPSG:4326`). Coordinate bounds align with Bengaluru municipal coordinates ($77.45^\circ\text{E} - 77.78^\circ\text{E}, 12.83^\circ\text{N} - 13.14^\circ\text{N}$).
-
-4. **`prediction_grid_template.csv`:**
-   * **Row Count:** Exactly 4,320 rows ($40\text{ wards} \times 18\text{ months } [2024\text{-}01 \text{ to } 2025\text{-}06] \times 6\text{ categories}$).
-
-### 2.2 Category & Target Variable Analysis
-Grievances map to 6 distinct categories. Notice that **there is no standalone `water` category** in the ground-truth data (water complaints are subsumed under `other` or `engineering/roads`).
-
-| Category Group | Total Complaints | Percentage | Primary Sub-Categories |
-| :--- | :--- | :--- | :--- |
-| `electrical` | 225,303 | 40.48% | Street light not working, wire snapping, pole repair |
-| `solid_waste` | 137,975 | 24.79% | Garbage dump, sweeping not done, burning garbage |
-| `roads` | 92,458 | 16.61% | Potholes, road cutting, debris removal, footpath maintenance |
-| `animals_health` | 40,355 | 7.25% | Animal birth control (ABC), stray dog neutering, dead animals |
-| `other` | 34,689 | 6.23% | Encroachments, illegal banners, health nuisances |
-| `trees` | 25,781 | 4.63% | Fallen trees, branch trimming, hazardous tree clearance |
-
-### 2.3 Data Quality & Consistency Audit
-* **Missing Values in `ward_features.csv`:**
-  * Free-text field `police_stn` has 112 nulls ($56.5\%$). Drop `police_stn` (unstructured text); retain numeric `police_stations` (0 nulls).
-  * Formatted numeric columns contain string formatting artifacts:
-    * `population_density_2011_persons_sq_km`: Contains commas (e.g. `"3,182"`).
-    * `decadal_popn_growth_rate_2011_2001` & `decadal_households_growth_rate_2011_2001`: Contain percentage symbols (e.g. `"59.10%"`).
-    * Coerce via robust regex cleansing to `float64`.
-* **Missing Wards Anomaly:**
-  * Total wards in city geometry = 198.
-  * Train wards = 156. Target wards = 40.
-  * $156 + 40 = 196$.
-  * Two wards—**Ward 3 (Atturu, Yelahanka)** and **Ward 65 (Kadu Malleshwara Ward, West)**—are present in `ward_features.csv` and `wards.geojson` but are **absent from both train complaints and the target prediction grid**.
-  * The ingestion pipeline flags Wards 3 and 65 as `UNOBSERVED_NON_EVALUATED`, enabling spatial feature computation (e.g., polygon neighbors) while excluding them from the supervised evaluation split.
+### 2.2 Structural Break & Covariate Shift
+1. **The May 2024 Surge:**  
+   City-wide grievance volume jumps from $\sim 7.5\text{k}-8.6\text{k}/\text{month}$ (Jan–Apr 2024) to $\mathbf{12.4\text{k}-19.3\text{k}/\text{month}}$ (May 2024 onwards). Ward-specific surge variance ($sd = 0.25$ on log-ratio) has low spatial correlation ($r \approx 0.13$), establishing a hard empirical noise ceiling.
+2. **Covariate Shift:**  
+   Target wards are systematically $\sim 30\%$ larger than training wards (mean road length $84\text{ km}$ vs. $64\text{ km}$; streetlights $2,395$ vs. $2,050$). Tree-based models flatline on upper-tail feature extrapolation; regularized log-linear Poisson formulations extrapolate proportionally without saturation.
 
 ---
 
-## 3. Architecture Design Principles
+## 3. Verified Performance & Benchmark Comparison
 
-1. **Contract-First Decoupling:** Backend ML and Frontend UI communicate exclusively through deterministic, versioned flat files (`.csv`, `.json`, `.geojson`). No live IPC, shared memory, or dynamic API dependencies.
-2. **Strict Spatial Integrity (Anti-Leakage):** To evaluate performance reliably on 40 unobserved wards, cross-validation must be strictly **Spatial Group K-Fold** partitioned on `ward_id`. Standard K-Fold or random temporal splits leak spatial ward identity and yield invalid, optimistic evaluation metrics.
-3. **Transparent Separation of Science and Heuristics:**
-   The dashboard explicitly color-codes and separates model predictions ($\widehat{Y}$) from the heuristic Civic Priority Index ($\text{CPI}$).
-4. **Reproducibility & Zero External Infrastructure:** The entire pipeline executes locally with a clean Python 3.10+ virtual environment (`pandas`, `numpy`, `scikit-learn`, `geopandas`, `joblib`, `streamlit`, `plotly`, `folium`). No Docker, Kafka, or cloud services required.
+All models are evaluated under **Leave-One-Ward-Out (LOWO) Spatial Cross-Validation** (156 folds) strictly on the **18-month target window (`2024-01` to `2025-06`)**:
+
+```
+========================================================================================
+MODEL ARCHITECTURE COMPARISON (LOWO 156 FOLDS, 18-MONTH TARGET WINDOW)
+========================================================================================
+Model Architecture                                   OOF MAE       OOF RMSE     WAPE (%)
+----------------------------------------------------------------------------------------
+Mean Count per Month x Category                       10.53         19.24        74.0%
+Stage 1: In-Fold Ratio-of-Sums Anchor                  8.65         16.18        60.8%
+Stage 2: Kernel-Smoothed Rates (ℓ = 2.5 km)            7.74         15.10        54.4%
+Production: Ward-Total + Kriging (ℓ = 3.5 km) + Pulse  6.64         13.88        46.6%
+----------------------------------------------------------------------------------------
+Net Improvement over Baseline Anchor:                 -23.3%        -14.2%       -14.2%
+========================================================================================
+```
+
+### Category-by-Category Accuracy Profile
+```
+Category        | OOF MAE  | OOF RMSE | OOF WAPE  | Mean Monthly Volume
+-------------------------------------------------------------------------
+trees           |    2.856 |    5.474 |    59.72% |    4.78
+other           |    3.148 |    5.476 |    47.06% |    6.69
+animals_health  |    3.601 |    7.123 |    45.02% |    8.00
+roads           |    5.686 |   13.429 |    46.45% |   12.24
+electrical      |   11.770 |   18.601 |    39.55% |   29.76
+solid_waste     |   12.756 |   22.773 |    53.39% |   23.89
+```
+
+### Ward-Level Absolute Error Distribution
+* **Minimum Ward MAE:** $1.35$ complaints/month (compact core wards)
+* **25th Percentile:** $3.30$ complaints/month
+* **Median Ward MAE:** **$4.83$ complaints/month**
+* **75th Percentile:** $7.49$ complaints/month
+* **Maximum Ward MAE:** $29.98$ complaints/month (outer mega-wards like Ward 198 Hemmigepura, actual volume $\approx 58.8$/month)
 
 ---
 
-## 4. High-Level System Architecture
+## 4. Production Model Architecture
 
 ```
-┌────────────────────────────────────────────────────────────────────────────────────────┐
-│                              BACKEND PROCESSING PIPELINE                               │
-│                                                                                        │
-│  [Raw Data Store]                                                                      │
-│  ├── grievances_public_wards.csv                                                       │
-│  ├── ward_features.csv                                                                 │
-│  ├── wards.geojson                                                                     │
-│  └── prediction_grid_template.csv                                                      │
-│           │                                                                            │
-│           ▼                                                                            │
-│  ┌───────────────────────────────┐     ┌───────────────────────────────┐               │
-│  │ A. Ingestion & Validation     │ ──▶ │ B. Preprocessing & Cleanse    │               │
-│  │ (Schema check, Ward audit)    │     │ (Regex numeric, Zero-fill)    │               │
-│  └───────────────────────────────┘     └───────────────────────────────┘               │
-│                                                        │                               │
-│                                                        ▼                               │
-│  ┌───────────────────────────────┐     ┌───────────────────────────────┐               │
-│  │ D. ML Training & Spatial CV   │ ◀── │ C. Feature Engineering Layer  │               │
-│  │ (Poisson GLM / Random Forest) │     │ (Density, Spatial Lag, Season)│               │
-│  └───────────────────────────────┘     └───────────────────────────────┘               │
-│           │                                                                            │
-│           ▼                                                                            │
-│  ┌───────────────────────────────┐     ┌───────────────────────────────┐               │
-│  │ E. Model Evaluation & Export  │ ──▶ │ F. Inference & CPI Scoring    │               │
-│  │ (Spatial Out-of-Fold Metrics) │     │ (Generate Target Predictions) │               │
-│  └───────────────────────────────┘     └───────────────────────────────┘               │
-└────────────────────────────────────────────────┬───────────────────────────────────────┘
-                                                 │ Output Contracts
-                                                 ▼
-┌────────────────────────────────────────────────────────────────────────────────────────┐
-│                                FILE CONTRACT INTERFACE                                 │
-│  ├── data/predictions/ward_predictions.csv     (Ward x Month x Category Predictions)   │
-│  ├── data/predictions/ward_summary_latest.csv  (Ward-aggregated Priority & Totals)     │
-│  ├── models/model_metrics.json                 (OOF MAE, RMSE, R2, Poisson Deviance)   │
-│  └── models/model_metadata.json                (Feature importance, Run timestamp)     │
-└────────────────────────────────────────────────┬───────────────────────────────────────┘
-                                                 │ File Ingestion
-                                                 ▼
-┌────────────────────────────────────────────────────────────────────────────────────────┐
-│                             FRONTEND PRESENTATION LAYER                                │
-│                                (Streamlit Dashboard)                                   │
-│                                                                                        │
-│  ┌────────────────────────────┐ ┌────────────────────────────┐ ┌─────────────────────┐ │
-│  │ Choropleth Map (Folium)    │ │ Spatio-Temporal Explorer   │ │ Model Governance &  │ │
-│  │ Predicted Demand vs. CPI   │ │ Category Trends (Plotly)   │ │ Explainability View │ │
-│  └────────────────────────────┘ └────────────────────────────┘ └─────────────────────┘ │
-└────────────────────────────────────────────────────────────────────────────────────────┘
+                         [Raw 18-Month Target Window Data]
+                                        │
+                 ┌──────────────────────┴──────────────────────┐
+                 ▼                                             ▼
+  [156 Ward Cross-Sectional Totals]             [City-Wide Temporal Pulse Shape]
+  Y_total(w, c) = Σ_{t=1}^{18} y_{w,t,c}        Shape(t, c) = Σ_w y_{w,t,c} / Σ_w Y_total(w,c)
+                 │                                             │
+                 ▼                                             │
+  [Ridge Regression on 14 Log Covariates]                      │
+  log(Ŷ_static) = β_0 + Σ β_k log(x_k + 1)                     │
+                 │                                             │
+                 ▼                                             │
+  [In-Fold Gaussian Residual Kriging]                          │
+  r_j = log(Y_act + 1) - log(Ŷ_static + 1)                     │
+  W_uj = exp(- d(u, j)^2 / (2ℓ^2)), ℓ = 3.5 km                 │
+  Ŷ_kriged(u, c) = Ŷ_static(u, c) · exp(Σ W̃_uj r_j)           │
+                 │                                             │
+                 └──────────────────────┬──────────────────────┘
+                                        │
+                                        ▼
+                  [Monthly Output Prediction: 4,320 Rows]
+                  ŷ_{u,t,c} = Ŷ_kriged(u, c) × Shape(t, c)
 ```
+
+1. **Step 1: 14 Log-Transformed Predictors:**  
+   $$\mathbf{z}_w = [\log(\text{pop}+1), \log(\text{hh}+1), \log(\text{road\_len}+1), \log(\text{streetlights}+1), \dots]$$
+   Extracted strictly from validated numeric columns in `ward_features.csv`.
+2. **Step 2: Ridge Regression on 18-Month Totals:**  
+   Solves $(\mathbf{X}^\top \mathbf{X} + \lambda \mathbf{I})\boldsymbol{\beta} = \mathbf{X}^\top \mathbf{y}$ with $\ell_2$ regularization ($\lambda = 5.0$).
+3. **Step 3: Gaussian Residual Kriging ($\ell = 3.5\text{ km}$):**  
+   Smooths localized micro-contagion across adjacent ward neighbors using planar UTM 43N Euclidean distances.
+4. **Step 4: Temporal Allocation via Pulse Shape:**  
+   Multiplies the static spatial total by the observed in-fold monthly curve, completely preserving category seasonality (monsoon road/tree spikes).
+5. **Step 5: Median-Loss Alignment:**  
+   Applies shrinkage factor $\kappa = 0.95$ to account for Poisson skewness.
 
 ---
 
-## 5. Detailed Module Architecture
+## 5. Policy Decision Support: CPI & Equity Sensitivity
 
-### Layer A: Data Ingestion Layer (`backend/ingestion.py`)
-Loads raw CSV and GeoJSON files with strict type enforcement.
-
-### Layer B: Data Validation Layer (`backend/validation.py`)
-Enforces integrity invariants prior to transformations (target grid row counts, date bounds, zero ward leakage).
-
-### Layer C: Data Preprocessing Layer (`backend/preprocessing.py`)
-Cleans numeric strings, aggregates complaints into ward-month-category counts, and performs zero-inflation panel Cartesian expansion.
-
-### Layer D: Feature Engineering Layer (`backend/features.py`)
-Extracts per-capita infrastructure ratios, topological neighbor lags from `wards.geojson`, and cyclical harmonic seasonal features ($\sin, \cos$).
-
-### Layer E: ML Training Layer (`backend/training.py`)
-Trains inductive count regressors across 5-Fold Spatial GroupKFold splitting strictly on `ward_id`.
-
-### Layer F: Model Evaluation Layer (`backend/evaluation.py`)
-Computes Spatial Out-of-Fold (OOF) metrics (MAE, RMSE, $R^2$, Poisson deviance).
-
-### Layer G: Inference Layer (`backend/inference.py`)
-Generates 4,320 predictions for the 40 unseen wards over the 18-month evaluation horizon.
-
-### Layer H: Priority Classification Layer (`backend/prioritization.py`)
-Computes the deterministic Civic Priority Index (CPI):
-$$\text{CPI}_w = 0.50 \cdot \widetilde{Y}_w + 0.25 \cdot \widetilde{\text{Density}}_w + 0.15 \cdot \widetilde{\text{Growth}}_w + 0.10 \cdot (1 - \widetilde{\text{Infra}}_w)$$
-
-### Layer I: Data Export Layer
-Serializes standardized artifacts to `data/predictions/` and `models/`.
-
-### Layer J: Frontend Presentation Layer (`frontend/app.py`)
-Streamlit interactive executive dashboard consuming exported contracts.
+1. **Percentile-Rank CPI:**
+   $$\text{CPI}_w = 0.40 \cdot \text{Rank}(\text{Demand}_w) + 0.30 \cdot \text{Rank}(\text{Density}_w) + 0.15 \cdot \text{Rank}(\text{Growth}_w) + 0.15 \cdot (1 - \text{Rank}(\text{Infra}_w))$$
+2. **Low-Reporting Equity Scenario:**
+   Corrects for digital reporting bias where affluent wards file disproportionately more complaints than underserved wards:
+   $$\text{ReportingProxy}_w = 0.5 \cdot \text{Rank}(\text{Transit}_w) + 0.5 \cdot (1 - \text{Rank}(\text{Density}_w))$$
+   $$\text{EquityDemand}_w = \frac{\text{Rank}(\text{Demand}_w)}{\text{ReportingProxy}_w + 0.2}$$
+3. **Monte Carlo Sensitivity Audit:**
+   Under $100$ random weight perturbations ($\pm 20\%$), the ranking maintains **Kendall's $\tau = 0.944$**. Exactly $30$ of $40$ wards maintain rock-solid priority classifications, while $10$ borderline wards are flagged for administrative discretion.
 
 ---
 
-## 6. Directory Structure
-
-```
-ward-pulse/
-├── README.md                           # System overview & judge briefing
-├── WARD_PULSE.md                       # Full architecture specification (this file)
-├── requirements.txt                    # Pinned production dependencies
-├── config.py                           # Central configuration
-│
-├── data/
-│   ├── raw/                            # Immutable raw competition assets
-│   ├── processed/                      # Intermediary clean feature tables
-│   └── predictions/                    # Output contracts ingested by frontend
-│       ├── ward_predictions.csv        # Detailed (Ward x Month x Category)
-│       └── ward_summary_latest.csv     # Ward aggregate & CPI priority rank
-│
-├── backend/
-│   ├── __init__.py
-│   ├── pipeline.py                     # Master CLI driver
-│   ├── ingestion.py                    # Schema enforcement & file loading
-│   ├── validation.py                   # Data integrity & invariant checks
-│   ├── preprocessing.py                # Regex cleansing, panel generation
-│   ├── features.py                     # Spatial contiguity & temporal encoding
-│   ├── training.py                     # Spatial GroupKFold ML training
-│   ├── evaluation.py                   # OOF metrics & model scoring
-│   ├── inference.py                    # Generation of target predictions
-│   └── prioritization.py               # Deterministic CPI scoring formula
-│
-├── models/
-│   ├── champion_regressor.joblib       # Persisted scikit-learn model artifact
-│   ├── model_metrics.json              # Evaluated spatial metrics (MAE, RMSE, R2)
-│   └── model_metadata.json             # Feature importances & training metadata
-│
-├── frontend/
-│   ├── __init__.py
-│   ├── app.py                          # Streamlit application entrypoint
-│   ├── components/
-│   │   ├── __init__.py
-│   │   ├── map_view.py                 # Folium choropleth component
-│   │   ├── charts.py                   # Plotly charts
-│   │   └── metrics_cards.py            # KPI metric cards
-│   └── utils.py                        # GeoJSON loader & data caching helpers
-│
-└── tests/
-    ├── __init__.py
-    ├── test_contracts.py               # Schema validation of backend exports
-    └── test_spatial_integrity.py       # Verification of zero train-test leakage
-```
-
----
-
-## 7. Execution Quickstart
+## 6. Execution & Verification Commands
 
 ```bash
-# 1. Install Dependencies
-pip install -r requirements.txt
-
-# 2. Run Full Backend ML Pipeline
+# 1. Run the entire backend training & inference pipeline
 python3 -m backend.pipeline
 
-# 3. Verify Contracts & Spatial Integrity
-pytest tests/
+# 2. Run automated validation test suite
+python3 tests/test_contracts.py && python3 tests/test_spatial_integrity.py
 
-# 4. Launch Dashboard
-streamlit run frontend/app.py
+# 3. Launch interactive decision dashboard
+streamlit run app.py
 ```

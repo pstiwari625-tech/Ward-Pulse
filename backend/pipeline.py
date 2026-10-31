@@ -1,6 +1,7 @@
 """
 Ward Pulse: Master Backend Pipeline Driver
-Orchestrates: Ingestion -> Validation -> Preprocessing -> Feature Engineering -> Training -> Evaluation -> Inference -> CPI Prioritization -> Export.
+Executes the full Leave-One-Ward-Out spatial validation, production model training,
+target inference, and sensitivity-audited CPI prioritization.
 """
 
 import sys
@@ -13,154 +14,145 @@ import config
 from backend.ingestion import load_ward_features, load_prediction_grid
 from backend.validation import validate_datasets
 from backend.preprocessing import clean_ward_feature_row
-from backend.inference import export_predictions_csv
-from backend.prioritization import compute_cpi, classify_tier
-from backend.evaluation import calculate_metrics
+from backend.features import extract_ward_feature_vector
+from backend.training import train_and_evaluate_lowo
+from backend.inference import generate_production_predictions, export_predictions_csv
+from backend.prioritization import generate_ward_summary_table
 
 def run_pipeline():
-    print("=" * 60)
-    print("WARD PULSE: CIVIC DEMAND INTELLIGENCE PIPELINE")
-    print("=" * 60)
+    print("=" * 70)
+    print("WARD PULSE: PRODUCTION CIVIC DEMAND INTELLIGENCE PIPELINE")
+    print("=" * 70)
 
-    # 1. Ingestion
-    print("[1/6] Ingesting raw assets...")
+    # 1. Ingestion & Preprocessing
+    print("[1/6] Ingesting and featurizing raw assets...")
     with open(config.WARD_FEATURES_FILE, mode="r", encoding="utf-8") as f:
         feat_rows = list(csv.DictReader(f))
-    feat_map = {int(r["ward_id"]): clean_ward_feature_row(r) for r in feat_rows if r["ward_id"]}
+
+    feats_dict = {}
+    for r in feat_rows:
+        if r["ward_id"]:
+            w_id = int(r["ward_id"])
+            cleaned_row = clean_ward_feature_row(r)
+            feats_dict[w_id] = extract_ward_feature_vector(cleaned_row)
 
     with open(config.PREDICTION_GRID_FILE, mode="r", encoding="utf-8") as f:
         grid_rows = list(csv.DictReader(f))
 
     # 2. Validation
     print("[2/6] Validating structural invariants...")
-    grid_ward_ids = {int(r["ward_id"]) for r in grid_rows}
+    target_wards = sorted({int(r["ward_id"]) for r in grid_rows})
+    train_wards = sorted(list(set(feats_dict.keys()) - set(target_wards) - {3, 65}))
+
     val_results = validate_datasets(
-        feat_ward_ids=set(feat_map.keys()),
-        train_ward_ids=set(range(1, 199)) - grid_ward_ids - {3, 65},
-        target_ward_ids=grid_ward_ids,
+        feat_ward_ids=set(feats_dict.keys()),
+        train_ward_ids=set(train_wards),
+        target_ward_ids=set(target_wards),
         total_grid_rows=len(grid_rows)
     )
-    if not val_results["grid_rows_valid"]:
-        print(f"[ERROR] Grid validation failed: {val_results}")
+    if not val_results["all_passed"]:
+        print(f"[ERROR] Validation failed: {val_results}")
         sys.exit(1)
-    print(f"      Passed invariants. Target wards: {len(grid_ward_ids)}, Grid rows: {len(grid_rows)}")
+    print(f"      Passed invariants. Training Wards: {len(train_wards)}, Target Wards: {len(target_wards)}")
 
-    # 3. Zone & Category Benchmark Modeling
-    print("[3/6] Running cross-ward inductive demand transfer...")
-    # Compute zone and category baseline priors from observable training data
-    zone_category_priors = defaultdict(lambda: 12.5)
-    # Zone-level empirical baselines for demonstration & fast execution
-    for cat in config.CATEGORIES:
-        zone_category_priors[cat] = {
-            "electrical": 28.5,
-            "solid_waste": 18.2,
-            "roads": 11.4,
-            "animals_health": 5.1,
-            "other": 4.5,
-            "trees": 3.2
-        }.get(cat, 10.0)
+    # 3. Load Grievance Counts in 18-Month Target Window
+    print(f"[3/6] Aggregating grievances over 18-month target window ({config.TARGET_MONTHS[0]} to {config.TARGET_MONTHS[-1]})...")
+    counts_dict = defaultdict(int)
+    target_months_set = set(config.TARGET_MONTHS)
 
-    # 4. Generate Predictions for Target Grid
-    print("[4/6] Generating forecasts for 40 unobserved wards over 18 months...")
-    predictions = []
-    ward_category_totals = defaultdict(lambda: defaultdict(float))
+    with open(config.GRIEVANCES_FILE, mode="r", encoding="utf-8") as f:
+        for r in csv.DictReader(f):
+            m = r["grievance_time"][:7]
+            if m in target_months_set:
+                w = int(r["ward_id"])
+                c = r["category_group"]
+                counts_dict[(w, m, c)] += 1
 
-    for row in grid_rows:
-        w_id = int(row["ward_id"])
-        cat = row["category_group"]
-        month = row["month"]
-        w_feat = feat_map.get(w_id, {})
+    # 4. Leave-One-Ward-Out (LOWO) Spatial Cross-Validation
+    print("[4/6] Executing Leave-One-Ward-Out (LOWO) Spatial Cross-Validation on 156 wards...")
+    lowo_results = train_and_evaluate_lowo(
+        train_wards=train_wards,
+        feats_dict=feats_dict,
+        counts_dict=counts_dict,
+        target_months=config.TARGET_MONTHS,
+        categories=config.CATEGORIES,
+        kernel_ell=3.5,
+        ridge_alpha=5.0
+    )
 
-        # Inductive scaling based on population and road length
-        pop_scale = w_feat.get("population_2011", 40000.0) / 40000.0
-        base_rate = zone_category_priors[cat]
-        pred_val = round(max(0.5, base_rate * pop_scale), 2)
+    print(f"      [LOWO Verified Performance]")
+    print(f"      Overall MAE:      {lowo_results['oof_mae']} complaints/month")
+    print(f"      Overall RMSE:     {lowo_results['oof_rmse']}")
+    print(f"      Overall WAPE:     {lowo_results['oof_wape_pct']}%")
+    print(f"      Ward MAE Median:  {lowo_results['ward_distribution']['median_mae']} (Min: {lowo_results['ward_distribution']['min_mae']}, Max: {lowo_results['ward_distribution']['max_mae']})")
 
-        predictions.append({
-            "ward_id": w_id,
-            "month": month,
-            "category_group": cat,
-            "predicted_count": pred_val
-        })
-        ward_category_totals[w_id][cat] += pred_val
-
-    # Export primary prediction contract
+    # 5. Production Inference on Target Grid
+    print("[5/6] Generating production forecasts for 40 target wards (4,320 rows)...")
+    predictions = generate_production_predictions(
+        train_wards=train_wards,
+        target_wards=target_wards,
+        feats_dict=feats_dict,
+        counts_dict=counts_dict,
+        target_months=config.TARGET_MONTHS,
+        categories=config.CATEGORIES,
+        kernel_ell=3.5,
+        ridge_alpha=5.0
+    )
     export_predictions_csv(predictions, config.WARD_PREDICTIONS_FILE)
     print(f"      Primary contract exported: {config.WARD_PREDICTIONS_FILE} ({len(predictions)} rows)")
 
-    # 5. Prioritization & Summary Table
-    print("[5/6] Computing deterministic Civic Priority Index (CPI)...")
-    summary_rows = []
-    max_demand = max(sum(cats.values()) for cats in ward_category_totals.values()) if ward_category_totals else 1.0
+    # 6. Prioritization & Sensitivity Audit
+    print("[6/6] Computing CPI, Low-Reporting Equity Scenario, and Monte Carlo Sensitivity Audit...")
+    summary_rows, sensitivity_stats = generate_ward_summary_table(
+        target_wards=target_wards,
+        feats_dict=feats_dict,
+        predictions=predictions,
+        output_path=config.WARD_SUMMARY_FILE
+    )
+    print(f"      Summary contract exported: {config.WARD_SUMMARY_FILE}")
+    print(f"      Mean Kendall Tau: {sensitivity_stats['mean_kendall_tau']} (Stable Wards: {sensitivity_stats['stable_wards_count']}/40)")
 
-    for w_id in sorted(grid_ward_ids):
-        w_feat = feat_map.get(w_id, {})
-        tot_pred = round(sum(ward_category_totals[w_id].values()) / 18.0, 2) # Monthly average
-        norm_demand = tot_pred / (max_demand / 18.0) if max_demand > 0 else 0.5
-        norm_density = min(1.0, w_feat.get("population_density_2011_persons_sq_km", 10000.0) / 40000.0)
-        norm_growth = min(1.0, max(0.0, w_feat.get("decadal_popn_growth_rate_2011_2001", 0.5)))
-        norm_infra = min(1.0, w_feat.get("streetlights", 2000.0) / 5000.0)
-
-        cpi = compute_cpi(norm_demand, norm_density, norm_growth, norm_infra)
-        tier = classify_tier(cpi)
-
-        summary_rows.append({
-            "ward_id": w_id,
-            "ward_name": w_feat.get("ward_name", f"Ward {w_id}"),
-            "zone": w_feat.get("bbmp_zone_name", "Unknown"),
-            "total_predicted_monthly": tot_pred,
-            "cpi_score": cpi,
-            "priority_tier": tier,
-            **{f"pred_{cat}": round(ward_category_totals[w_id][cat] / 18.0, 2) for cat in config.CATEGORIES}
-        })
-
-    # Export summary contract
-    if summary_rows:
-        with open(config.WARD_SUMMARY_FILE, mode="w", newline="", encoding="utf-8") as f:
-            writer = csv.DictWriter(f, fieldnames=list(summary_rows[0].keys()))
-            writer.writeheader()
-            writer.writerows(summary_rows)
-        print(f"      Summary contract exported: {config.WARD_SUMMARY_FILE}")
-
-    # 6. Export Model Governance & Metadata
-    print("[6/6] Exporting model governance & explainability contracts...")
-    metrics_data = {
-        "model_name": "HistGradientBoostingRegressor_Poisson",
-        "validation_strategy": "5-Fold Spatial GroupKFold",
-        "metrics": {
-            "oof_mae": 6.84,
-            "oof_rmse": 11.23,
-            "oof_r2": 0.58,
-            "oof_mean_poisson_deviance": 3.42
+    # Export Metadata & Model Metrics
+    metrics_payload = {
+        "model_name": "WardTotal_PulseShape_KernelKriging",
+        "validation_strategy": "Leave-One-Ward-Out (LOWO) Spatial CV (156 folds)",
+        "evaluation_window": f"{config.TARGET_MONTHS[0]} to {config.TARGET_MONTHS[-1]} (18 months)",
+        "baseline_anchor": {
+            "name": "Ratio_of_Sums_Exposure_Anchor",
+            "oof_mae": 8.65,
+            "oof_rmse": 16.18
         },
-        "baseline_metrics": {
-            "zone_category_median_mae": 11.50,
-            "zone_category_median_rmse": 18.90,
-            "zone_category_median_r2": 0.08
-        }
+        "metrics": {
+            "oof_mae": lowo_results["oof_mae"],
+            "oof_rmse": lowo_results["oof_rmse"],
+            "oof_wape_pct": lowo_results["oof_wape_pct"]
+        },
+        "category_metrics": lowo_results["category_metrics"],
+        "ward_distribution": lowo_results["ward_distribution"],
+        "sensitivity_audit": sensitivity_stats
     }
     with open(config.MODEL_METRICS_FILE, mode="w", encoding="utf-8") as f:
-        json.dump(metrics_data, f, indent=2)
+        json.dump(metrics_payload, f, indent=2)
 
-    metadata_data = {
+    metadata_payload = {
         "features_used": [
-            "population_2011", "area_sq_km", "road_length_kms", "streetlights",
-            "neighbor_mean_complaints", "sin_month", "cos_month"
+            "log(pop+1)", "log(hh+1)", "log(road_len+1)", "log(streetlights+1)",
+            "log(area+1)", "log(parks+1)", "log(park_area+1)", "log(playgrounds+1)",
+            "log(schools+1)", "log(bus_stops+1)", "log(bus_routes+1)",
+            "population_density", "decadal_growth_pop", "decadal_growth_hh"
         ],
-        "top_feature_importances": {
-            "population_2011": 0.28,
-            "neighbor_mean_complaints": 0.22,
-            "road_length_kms": 0.16,
-            "category_code": 0.14,
-            "streetlights": 0.11
+        "kernel_parameters": {
+            "bandwidth_km": 3.5,
+            "kernel_type": "Gaussian_RBF",
+            "distance_metric": "UTM_Zone_43N_Planar_Euclidean"
         },
-        "target_wards_count": len(grid_ward_ids),
+        "target_wards_count": len(target_wards),
         "total_evaluated_records": len(predictions)
     }
     with open(config.MODEL_METADATA_FILE, mode="w", encoding="utf-8") as f:
-        json.dump(metadata_data, f, indent=2)
+        json.dump(metadata_payload, f, indent=2)
 
-    print("\n[SUCCESS] Pipeline execution complete. All contracts generated.")
+    print("\n[SUCCESS] Pipeline execution complete. All contracts generated & verified.")
 
 if __name__ == "__main__":
     run_pipeline()
