@@ -6,6 +6,8 @@ Loads and validates official hackathon organizer datasets:
 - data/geospatial/wards.geojson (198 Ward Polygons)
 - data/geospatial/ward_features.csv (Ward socio-economic & infrastructure features)
 - data/geospatial/prediction_grid_template.csv (40 prediction target wards template)
+
+Implements Streamlit caching to avoid repeatedly re-parsing large GeoJSON files.
 """
 
 from pathlib import Path
@@ -13,6 +15,9 @@ from typing import Dict, Any, Optional, Tuple, Set, List
 import json
 import pandas as pd
 import logging
+import streamlit as st
+
+from utils.validation import verify_geographical_location
 
 logger = logging.getLogger(__name__)
 
@@ -32,9 +37,11 @@ def find_file_path(relative_paths: List[str]) -> Optional[Path]:
     return None
 
 
+@st.cache_data(show_spinner=False)
 def load_geojson_boundaries() -> Tuple[Optional[Dict[str, Any]], Dict[str, Any]]:
     """
     Load official ward boundaries from wards.geojson and perform strict spatial validation.
+    Cached via @st.cache_data for instant interactive UI rendering.
     
     Validates:
     - File existence and valid JSON syntax
@@ -129,7 +136,7 @@ def load_geojson_boundaries() -> Tuple[Optional[Dict[str, Any]], Dict[str, Any]]
     if missing_id_count > 0:
         validation["errors"].append(f"{missing_id_count} features missing 'ward_id'.")
     if len(set(ward_ids)) != len(ward_ids):
-        validation["errors"].append(f"Duplicate ward_id detected in GeoJSON features.")
+        validation["errors"].append("Duplicate ward_id detected in GeoJSON features.")
 
     # Validate coordinates (Bangalore municipal bounds: lon ~77.4 - 77.8, lat ~12.8 - 13.2)
     if all_lons and all_lats:
@@ -151,9 +158,11 @@ def load_geojson_boundaries() -> Tuple[Optional[Dict[str, Any]], Dict[str, Any]]
     return geojson_data, validation
 
 
+@st.cache_data(show_spinner=False)
 def load_ward_features() -> Tuple[Optional[pd.DataFrame], Dict[str, Any]]:
     """
     Load official ward demographic, infrastructure, and socio-economic attributes.
+    Cached via @st.cache_data.
     
     Normalizes:
     - ward_id to integer
@@ -200,6 +209,10 @@ def load_ward_features() -> Tuple[Optional[pd.DataFrame], Dict[str, Any]]:
         validation["errors"].append(f"Failed to cast ward_id to integer: {exc}")
         return None, validation
 
+    # Validate 1-to-1 uniqueness
+    if not df["ward_id"].is_unique:
+        validation["errors"].append("ward_id in ward_features.csv contains duplicate entries.")
+
     # Provide clean standardized aliases for UI presentation
     if "bbmp_zone_name" in df.columns and "zone" not in df.columns:
         df["zone"] = df["bbmp_zone_name"]
@@ -236,10 +249,12 @@ def load_ward_features() -> Tuple[Optional[pd.DataFrame], Dict[str, Any]]:
     return df, validation
 
 
+@st.cache_data(show_spinner=False)
 def load_target_ward_ids() -> Tuple[Set[int], Dict[str, Any]]:
     """
     Load official prediction target wards from prediction_grid_template.csv.
     Identifies the 40 wards that have zero historical complaint records.
+    Cached via @st.cache_data.
     """
     validation: Dict[str, Any] = {
         "target_count": 0,
@@ -272,14 +287,16 @@ def load_target_ward_ids() -> Tuple[Set[int], Dict[str, Any]]:
     return set(), validation
 
 
+@st.cache_data(show_spinner=False)
 def get_merged_geospatial_data() -> Dict[str, Any]:
     """
-    Master loader function:
+    Master cached loader function:
     1. Loads GeoJSON boundaries.
     2. Loads ward_features.csv.
     3. Identifies the 40 target wards from prediction_grid_template.csv.
     4. Enriches GeoJSON feature properties with ward attributes.
     5. Calculates bounds and matched/unmatched statistics.
+    6. Performs critical geographical location audit (Bengaluru BBMP vs Lucknow).
     """
     geojson_data, geo_val = load_geojson_boundaries()
     df_features, feat_val = load_ward_features()
@@ -295,6 +312,11 @@ def get_merged_geospatial_data() -> Dict[str, Any]:
         "unmatched_count": 0,
         "bounds": [[12.834, 77.460], [13.144, 77.784]],
         "centroid": [12.9888, 77.6221],
+        "location_audit": {
+            "detected_location": "Unknown",
+            "is_mismatch_with_lucknow": False,
+            "advisory": ""
+        },
         "validation_report": {
             "geojson": geo_val,
             "features": feat_val,
@@ -325,6 +347,14 @@ def get_merged_geospatial_data() -> Dict[str, Any]:
     result["unmatched_count"] = len(unmatched_ids)
     result["validation_report"]["matched_ids"] = matched_ids
     result["validation_report"]["unmatched_ids"] = unmatched_ids
+
+    # Location Verification
+    sample_names = df_features["ward_name"].dropna().tolist()
+    loc_audit = verify_geographical_location(
+        geo_val.get("bounds", [[12.834, 77.460], [13.144, 77.784]]),
+        sample_names
+    )
+    result["location_audit"] = loc_audit
 
     # Create fast index lookup from ward_features
     features_by_id = df_features.set_index("ward_id").to_dict(orient="index")

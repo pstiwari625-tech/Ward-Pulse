@@ -94,6 +94,19 @@ def render_official_ward_map(
         unsafe_allow_html=True
     )
 
+    # Geographical Location Audit Notice
+    loc_audit = geo_data.get("location_audit", {})
+    if loc_audit.get("is_mismatch_with_lucknow", True):
+        st.markdown(
+            f"""
+            <div style="background-color: #FEF3C7; border-left: 4px solid #F59E0B; padding: 0.75rem 1rem; border-radius: 6px; margin-bottom: 1.25rem; font-size: 0.825rem; color: #92400E; line-height: 1.5;">
+                <strong>⚠️ Geographical Location Verification Advisory:</strong><br>
+                {loc_audit.get('advisory', 'The official hackathon organiser dataset contains BBMP boundaries (12.83°N–13.14°N, 77.46°E–77.78°E) rather than Lucknow. Displayed faithfully without coordinate falsification, pending organiser clarification.')}
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+
     # Toolbar: Ward Selection Dropdown & Future ML Filter Hook
     col_sel, col_filt, col_tiles = st.columns([2.5, 2.2, 1.3])
 

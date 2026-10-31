@@ -1,11 +1,13 @@
 """
-Ward Pulse: Phase 3 Geospatial Map Integration Tests
+Ward Pulse: Phase 2 & 3 Master Integration Tests
 Validates official GeoJSON integrity, attributes CSV matching, target ward identification,
-and map layer generation.
+demand classifier determinism, and geographical location verification.
 """
 
 import sys
 from pathlib import Path
+import pandas as pd
+import numpy as np
 
 # Add project root to path
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
@@ -18,6 +20,8 @@ from utils.geo_loader import (
     load_target_ward_ids,
     get_merged_geospatial_data
 )
+from utils.validation import verify_geographical_location, validate_prediction_template
+from utils.demand_classifier import classify_dataframe_demand, DEMAND_TIERS, DEMAND_COLOR_MAP
 
 
 def test_geojson_validity():
@@ -80,6 +84,20 @@ def test_geospatial_merging_and_matching():
     print("[PASS] Geospatial merge verified: 198/198 matched, 0 unmatched, enriched properties validated.")
 
 
+def test_geographical_location_verification():
+    """
+    CRITICAL TEST: Verifies that coordinates (12.83°N–13.14°N, 77.46°E–77.78°E) and
+    ward names (Yelahanka, Malleshwaram) correctly trigger the Bengaluru location detection
+    and mismatch advisory.
+    """
+    merged = get_merged_geospatial_data()
+    loc = merged.get("location_audit", {})
+    assert loc.get("is_mismatch_with_lucknow") is True, "Expected location mismatch flag for Bengaluru dataset"
+    assert "Bengaluru" in loc.get("detected_location", ""), f"Unexpected detected location: {loc.get('detected_location')}"
+    assert "advisory" in loc, "Missing location advisory string"
+    print(f"[PASS] Geographical location verification passed: Detected {loc['detected_location']}.")
+
+
 def test_no_synthetic_predictions_introduced():
     """Verify no fake complaint counts or invented demand levels are added to properties."""
     merged = get_merged_geospatial_data()
@@ -91,10 +109,29 @@ def test_no_synthetic_predictions_introduced():
     print("[PASS] Strict anti-hallucination check passed: Zero synthetic predictions in baseline properties.")
 
 
+def test_demand_classifier_deterministic():
+    """Verify demand classifier is reproducible, quantile-based, and uses documented colors."""
+    test_df = pd.DataFrame({
+        "ward_id": list(range(1, 101)),
+        "predicted_complaints": list(range(1, 101))
+    })
+    classified_df, meta = classify_dataframe_demand(test_df)
+    assert meta["status"] == "SUCCESS"
+    assert set(meta["tier_counts"].keys()) == set(DEMAND_TIERS)
+    # Check that cutoffs split evenly for 100 sequential numbers
+    assert classified_df.loc[0, "demand_level"] == "Low"      # value 1
+    assert classified_df.loc[99, "demand_level"] == "Very High" # value 100
+    for tier in DEMAND_TIERS:
+        assert tier in DEMAND_COLOR_MAP
+    print("[PASS] Demand classifier verified: Documented 4-tier cutoffs and deterministic classification.")
+
+
 if __name__ == "__main__":
     test_geojson_validity()
     test_ward_features_validity()
     test_target_wards_identification()
     test_geospatial_merging_and_matching()
+    test_geographical_location_verification()
     test_no_synthetic_predictions_introduced()
-    print("\n[ALL TESTS PASSED] Phase 3 Official GeoJSON Map Integration verified.")
+    test_demand_classifier_deterministic()
+    print("\n[ALL 7 TESTS PASSED] Phase 2 & Phase 3 Master Integration verified.")

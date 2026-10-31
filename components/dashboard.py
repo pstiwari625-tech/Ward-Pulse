@@ -37,7 +37,7 @@ def render_header(data_status: Dict[str, Any]):
             </div>
             <div class="header-meta">
                 <span class="badge badge-location">
-                    📍 Lucknow Municipal Corp. / Civic Grid
+                    📍 Official Organiser Municipal Grid (BBMP / 198 Wards)
                 </span>
                 <span class="badge {badge_class}">
                     <span class="badge-pill-pulse"></span>
@@ -85,6 +85,16 @@ def render_status_banner(data_status: Dict[str, Any]):
             """,
             unsafe_allow_html=True
         )
+
+    # Geographical Location Audit Notice
+    st.markdown(
+        """
+        <div style="background-color: #FEF3C7; border-left: 4px solid #F59E0B; padding: 0.75rem 1rem; border-radius: 6px; margin-bottom: 1rem; font-size: 0.825rem; color: #92400E; line-height: 1.5;">
+            <strong>⚠️ Geographical Location Verification Notice:</strong> The official hackathon organiser dataset (<code>p3-ward-civic-demand</code>) contains 198 BBMP ward boundaries and coordinates (12.83°N–13.14°N, 77.46°E–77.78°E) corresponding to Bengaluru, despite the hackathon repository title referencing Lucknow. In strict compliance with data integrity guidelines, boundaries and coordinates are displayed exactly as provided by the organisers without artificial coordinate shifting or relabeling, pending organiser clarification.
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
 
 
 def render_welcome_card():
